@@ -145,11 +145,13 @@ const styles = StyleSheet.create({
   flagText: {
     fontSize: 14,
     marginRight: 6,
+    fontFamily: "CalSans",
   },
   codeText: {
     fontSize: 14,
     color: colors.font_dark,
     marginRight: 4,
+    fontFamily: "CalSans",
   },
   phoneInput: {
     flex: 1,
@@ -189,6 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 16,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   countryItem: {
     flexDirection: "row",
@@ -202,9 +205,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   countryCode: {
     fontSize: 14,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
 });
