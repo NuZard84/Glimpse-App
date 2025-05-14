@@ -10,18 +10,18 @@ export const typography = StyleSheet.create({
     h2: {
         fontFamily: 'CalSans',
         fontSize: 24,
-        lineHeight: 32,
+        lineHeight: 30,
     },
     h3: {
         fontFamily: 'CalSans',
         fontSize: 20,
-        lineHeight: 28,
+        lineHeight: 26,
     },
 
     body: {
         fontFamily: 'CalSans',
         fontSize: 16,
-        lineHeight: 24,
+        lineHeight: 22,
     },
     bodySm: {
         fontFamily: 'CalSans',

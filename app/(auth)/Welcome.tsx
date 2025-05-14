@@ -97,7 +97,6 @@ export default function Welcome() {
             <Image
               source={require("../../assets/images/grad_logo.png")}
               style={styles.logo}
-              resizeMode="contain"
             />
           </Animated.View>
           <Animated.Text style={[typography.body, welcomeTextStyle]}>
@@ -150,6 +149,7 @@ const styles = StyleSheet.create({
     top: 0,
   },
   logo: {
+    objectFit: "contain",
     width: 135,
     height: 135,
   },
