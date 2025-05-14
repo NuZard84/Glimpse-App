@@ -22,7 +22,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { colors } from "../../constants/colors";
+import { colors } from "../../constants/Colors";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");

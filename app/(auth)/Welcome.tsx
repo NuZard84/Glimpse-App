@@ -1,6 +1,6 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import PageContainer from "@/common/PageContainer";
-import { colors } from "@/constants/colors";
+import { colors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { router } from "expo-router";
 import { useEffect } from "react";

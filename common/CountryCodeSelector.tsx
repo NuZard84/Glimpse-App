@@ -1,4 +1,4 @@
-import { colors } from "@/constants/colors";
+import { colors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { Entypo } from "@expo/vector-icons";
 import React, { useState } from "react";
