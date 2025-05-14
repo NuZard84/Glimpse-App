@@ -214,7 +214,11 @@ export default function RegisterPage() {
         <Animated.View
           style={[styles.googleButtonContainer, buttonsAnimatedStyle]}
         >
-          <ButtonComponent text="Signup with Google" onPress={() => {}} />
+          <ButtonComponent
+            text="Signup with Google"
+            onPress={() => {}}
+            icon={require("../../assets/images/google.png")}
+          />
         </Animated.View>
 
         <Animated.View style={[styles.termsContainer, termsAnimatedStyle]}>
@@ -275,6 +279,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   passwordContainer: {
     width: "100%",
@@ -289,6 +294,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   buttonsContainer: {
     display: "flex",

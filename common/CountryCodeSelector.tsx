@@ -156,6 +156,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 12,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   modalContainer: {
     flex: 1,

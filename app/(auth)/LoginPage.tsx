@@ -225,7 +225,11 @@ export default function LoginPage() {
         <Animated.View
           style={[styles.googleButtonContainer, buttonsAnimatedStyle]}
         >
-          <ButtonComponent text="Login with Google" onPress={() => {}} />
+          <ButtonComponent
+            text="Login with Google"
+            onPress={() => {}}
+            icon={require("../../assets/images/google.png")}
+          />
         </Animated.View>
       </View>
     </PageContainer>
@@ -274,6 +278,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   passwordContainer: {
     width: "100%",
@@ -288,6 +293,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     color: colors.font_dark,
+    fontFamily: "CalSans",
   },
   forgotPasswordContainer: {
     width: "100%",

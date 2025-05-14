@@ -114,12 +114,14 @@ export default function Welcome() {
             }}
             bgColor={colors.bg_gray}
             textColor={colors.font_dark}
+            icon={require("../../assets/images/mail.png")}
           />
           <ButtonComponent
             text="Sign up with Google"
             onPress={() => {}}
             bgColor={colors.bg_gray}
             textColor={colors.font_dark}
+            icon={require("../../assets/images/google.png")}
           />
         </Animated.View>
       </View>

@@ -1,6 +1,13 @@
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/styles";
-import { StyleProp, Text, TouchableOpacity, ViewStyle } from "react-native";
+import {
+  Image,
+  ImageSourcePropType,
+  StyleProp,
+  Text,
+  TouchableOpacity,
+  ViewStyle,
+} from "react-native";
 
 type ButtonComponentProps = {
   text: string;
@@ -8,6 +15,9 @@ type ButtonComponentProps = {
   style?: StyleProp<ViewStyle>;
   textColor?: string;
   bgColor?: string;
+  icon?: ImageSourcePropType;
+  iconHeight?: number;
+  iconWidth?: number;
 };
 
 export default function ButtonComponent({
@@ -16,6 +26,9 @@ export default function ButtonComponent({
   style,
   textColor = colors.font_dark,
   bgColor = colors.bg_gray,
+  icon,
+  iconHeight = 24,
+  iconWidth = 24,
 }: ButtonComponentProps) {
   return (
     <TouchableOpacity
@@ -30,10 +43,17 @@ export default function ButtonComponent({
               alignItems: "center",
               justifyContent: "center",
               paddingVertical: 14,
+              flexDirection: "row",
             },
-        { backgroundColor: bgColor },
+        { backgroundColor: bgColor, gap: 8 },
       ]}
     >
+      {icon && (
+        <Image
+          source={icon}
+          style={{ width: iconWidth, height: iconHeight, objectFit: "contain" }}
+        />
+      )}
       <Text style={[typography.button, { color: textColor }]}>{text}</Text>
     </TouchableOpacity>
   );
