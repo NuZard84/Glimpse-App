@@ -1,10 +1,11 @@
 import ButtonComponent from "@/common/ButtonComponent";
+import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/styles";
-import { Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -110,19 +111,6 @@ export default function RegisterPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const textInputMap = [
-    {
-      placeholder: "username",
-      value: username,
-      setValue: setUsername,
-    },
-    {
-      placeholder: "phone number",
-      value: phoneNumber,
-      setValue: setPhoneNumber,
-    },
-  ];
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -146,24 +134,43 @@ export default function RegisterPage() {
         </Animated.View>
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-          {textInputMap.map((item, index) => (
-            <Fragment key={index}>
-              <TextInput
-                style={styles.textInput}
-                cursorColor={colors.font_brand}
-                placeholder={item.placeholder}
-                placeholderTextColor={"#0000004D"}
-                value={item.value}
-                onChangeText={item.setValue}
-              />
-            </Fragment>
-          ))}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              cursorColor={colors.font_brand}
+              placeholder="Username"
+              placeholderTextColor={colors.font_placeholder}
+              value={username}
+              onChangeText={setUsername}
+            />
+            <AntDesign
+              name="user"
+              size={20}
+              color={colors.font_placeholder}
+              style={styles.inputIcon}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <CountryCodeSelector
+              phoneNumber={phoneNumber}
+              setPhoneNumber={setPhoneNumber}
+              placeholder="Phone number"
+            />
+            <AntDesign
+              name="phone"
+              size={20}
+              color={colors.font_placeholder}
+              style={styles.inputIcon}
+            />
+          </View>
+
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
               cursorColor={colors.font_brand}
-              placeholder="password"
-              placeholderTextColor={"#0000004D"}
+              placeholder="Password"
+              placeholderTextColor={colors.font_placeholder}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -172,7 +179,7 @@ export default function RegisterPage() {
               <Entypo
                 name={showPassword ? "eye" : "eye-with-line"}
                 size={20}
-                color={"#0000004D"}
+                color={colors.font_placeholder}
               />
             </Pressable>
           </View>
@@ -319,5 +326,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 16,
+  },
+  inputContainer: {
+    width: "100%",
+    position: "relative",
+  },
+  inputIcon: {
+    position: "absolute",
+    right: 16,
+    top: 14,
+    zIndex: 1,
   },
 });

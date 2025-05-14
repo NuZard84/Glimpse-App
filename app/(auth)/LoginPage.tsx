@@ -1,10 +1,11 @@
 import ButtonComponent from "@/common/ButtonComponent";
+import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
 import { colors } from "@/constants/colors";
 import { typography } from "@/constants/styles";
-import { Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -25,9 +26,11 @@ import Animated, {
 } from "react-native-reanimated";
 
 export default function LoginPage() {
-  const [loginIdentifier, setLoginIdentifier] = useState("");
+  const [username, setUsername] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [usePhone, setUsePhone] = useState(true);
 
   // Animation values
   const logoOpacity = useSharedValue(0);
@@ -107,6 +110,10 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
+  const toggleInputMethod = () => {
+    setUsePhone(!usePhone);
+  };
+
   return (
     <PageContainer>
       <View style={styles.container}>
@@ -126,21 +133,49 @@ export default function LoginPage() {
         </Animated.View>
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-          <TextInput
-            style={styles.textInput}
-            cursorColor={colors.font_brand}
-            placeholder="Phone or username"
-            placeholderTextColor={"#0000004D"}
-            value={loginIdentifier}
-            onChangeText={setLoginIdentifier}
-          />
+          {usePhone ? (
+            <Fragment>
+              <View style={styles.inputContainer}>
+                <CountryCodeSelector
+                  phoneNumber={phoneNumber}
+                  setPhoneNumber={setPhoneNumber}
+                  placeholder="Phone number"
+                />
+                <TouchableOpacity
+                  style={styles.inputToggleIcon}
+                  onPress={toggleInputMethod}
+                >
+                  <AntDesign name="user" size={20} color={colors.font_brand} />
+                </TouchableOpacity>
+              </View>
+            </Fragment>
+          ) : (
+            <Fragment>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  cursorColor={colors.font_brand}
+                  placeholder="Username"
+                  placeholderTextColor={colors.font_placeholder}
+                  value={username}
+                  onChangeText={setUsername}
+                />
+                <TouchableOpacity
+                  style={styles.inputToggleIcon}
+                  onPress={toggleInputMethod}
+                >
+                  <AntDesign name="phone" size={20} color={colors.font_brand} />
+                </TouchableOpacity>
+              </View>
+            </Fragment>
+          )}
 
           <View style={styles.passwordContainer}>
             <TextInput
               style={styles.passwordInput}
               cursorColor={colors.font_brand}
               placeholder="Password"
-              placeholderTextColor={"#0000004D"}
+              placeholderTextColor={colors.font_placeholder}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
@@ -149,7 +184,7 @@ export default function LoginPage() {
               <Entypo
                 name={showPassword ? "eye" : "eye-with-line"}
                 size={20}
-                color={"#0000004D"}
+                color={colors.font_placeholder}
               />
             </Pressable>
           </View>
@@ -293,5 +328,22 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: 16,
     marginBottom: 30,
+  },
+  inputContainer: {
+    width: "100%",
+    position: "relative",
+  },
+  inputToggleIcon: {
+    position: "absolute",
+    right: 16,
+    top: 14,
+    zIndex: 1,
+  },
+  switchInputText: {
+    ...typography.bodySm,
+    color: colors.font_brand,
+    alignSelf: "flex-end",
+    marginTop: 6,
+    marginRight: 4,
   },
 });
