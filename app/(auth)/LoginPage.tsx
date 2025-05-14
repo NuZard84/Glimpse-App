@@ -1,7 +1,7 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
-import { colors } from "@/constants/Colors";
+import { colors } from "@/constants/colors";
 import { typography } from "@/constants/styles";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
