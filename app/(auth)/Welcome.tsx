@@ -1,6 +1,7 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import PageContainer from "@/common/PageContainer";
-import { colors } from "@/constants/Colors";
+import ThemeToggleIcon from "@/common/ThemeToggleIcon";
+import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { router } from "expo-router";
 import { useEffect } from "react";
@@ -18,6 +19,8 @@ import Animated, {
 } from "react-native-reanimated";
 
 export default function Welcome() {
+  const colors = useAppColors();
+
   // Animation values
   const logoOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.5);
@@ -91,6 +94,7 @@ export default function Welcome() {
 
   return (
     <PageContainer>
+      <ThemeToggleIcon style={styles.themeToggle} size={22} />
       <View style={styles.container}>
         <View style={styles.welcomeCotainer}>
           <Animated.View style={[styles.logoContainer, logoAnimatedStyle]}>
@@ -99,10 +103,18 @@ export default function Welcome() {
               style={styles.logo}
             />
           </Animated.View>
-          <Animated.Text style={[typography.body, welcomeTextStyle]}>
+          <Animated.Text
+            style={[
+              typography.body,
+              welcomeTextStyle,
+              { color: colors.font_dark },
+            ]}
+          >
             Welcome To
           </Animated.Text>
-          <Animated.Text style={[typography.h1, titleTextStyle]}>
+          <Animated.Text
+            style={[typography.h1, titleTextStyle, { color: colors.font_dark }]}
+          >
             Glimpse
           </Animated.Text>
         </View>
@@ -162,5 +174,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: "100%",
     gap: 16,
+  },
+  themeToggle: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    zIndex: 100,
   },
 });

@@ -1,7 +1,8 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
-import { colors } from "@/constants/Colors";
+import ThemeToggleIcon from "@/common/ThemeToggleIcon";
+import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -26,6 +27,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 export default function LoginPage() {
+  const colors = useAppColors();
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -116,17 +118,29 @@ export default function LoginPage() {
 
   return (
     <PageContainer>
+      <ThemeToggleIcon style={styles.themeToggle} size={22} />
       <View style={styles.container}>
         <Animated.View style={[styles.headerContainer, logoAnimatedStyle]}>
           <Image
             source={require("../../assets/images/logo.png")}
             style={styles.logo}
           />
-          <Animated.Text style={[typography.h1, headerTextStyle]}>
+          <Animated.Text
+            style={[
+              typography.h1,
+              headerTextStyle,
+              { color: colors.font_dark },
+            ]}
+          >
             Log In
           </Animated.Text>
           <Animated.Text
-            style={[typography.body, styles.subheaderText, headerTextStyle]}
+            style={[
+              typography.body,
+              styles.subheaderText,
+              { color: colors.font_dark },
+              headerTextStyle,
+            ]}
           >
             We&apos;re happy to see you again.
           </Animated.Text>
@@ -153,7 +167,13 @@ export default function LoginPage() {
             <Fragment>
               <View style={styles.inputContainer}>
                 <TextInput
-                  style={styles.textInput}
+                  style={[
+                    styles.textInput,
+                    {
+                      backgroundColor: colors.bg_gray,
+                      color: colors.font_dark,
+                    },
+                  ]}
                   cursorColor={colors.font_brand}
                   placeholder="Username"
                   placeholderTextColor={colors.font_placeholder}
@@ -170,9 +190,14 @@ export default function LoginPage() {
             </Fragment>
           )}
 
-          <View style={styles.passwordContainer}>
+          <View
+            style={[
+              styles.passwordContainer,
+              { backgroundColor: colors.bg_gray },
+            ]}
+          >
             <TextInput
-              style={styles.passwordInput}
+              style={[styles.passwordInput, { color: colors.font_dark }]}
               cursorColor={colors.font_brand}
               placeholder="Password"
               placeholderTextColor={colors.font_placeholder}
@@ -191,7 +216,14 @@ export default function LoginPage() {
 
           <View style={styles.forgotPasswordContainer}>
             <TouchableOpacity onPress={() => {}}>
-              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+              <Text
+                style={[
+                  styles.forgotPasswordText,
+                  { color: colors.font_brand },
+                ]}
+              >
+                Forgot Password?
+              </Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -203,7 +235,13 @@ export default function LoginPage() {
             bgColor={colors.bg_light_brand}
             onPress={() => {}}
           />
-          <Text style={[typography.bodySm, { textAlign: "center" }]}>
+          <Text
+            style={[
+              typography.bodySm,
+              { textAlign: "center" },
+              { color: colors.font_dark },
+            ]}
+          >
             Don&apos;t have an account yet?{" "}
             <Text
               onPress={() => {
@@ -217,9 +255,21 @@ export default function LoginPage() {
         </Animated.View>
 
         <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
-          <View style={styles.dividerLine} />
-          <Text style={[typography.bodySm, styles.dividerText]}>or</Text>
-          <View style={styles.dividerLine} />
+          <View
+            style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
+          />
+          <Text
+            style={[
+              typography.bodySm,
+              styles.dividerText,
+              { color: colors.font_dark },
+            ]}
+          >
+            or
+          </Text>
+          <View
+            style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
+          />
         </Animated.View>
 
         <Animated.View
@@ -273,18 +323,15 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: "100%",
-    backgroundColor: colors.bg_gray,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   passwordContainer: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bg_gray,
     borderRadius: 16,
     paddingVertical: 4,
     paddingHorizontal: 16,
@@ -292,7 +339,6 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     paddingVertical: 10,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   forgotPasswordContainer: {
@@ -302,7 +348,6 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     ...typography.bodySm,
-    color: colors.font_brand,
   },
   buttonsContainer: {
     display: "flex",
@@ -324,11 +369,9 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.bg_gray,
   },
   dividerText: {
     marginHorizontal: 10,
-    color: colors.font_dark,
   },
   googleButtonContainer: {
     width: "100%",
@@ -347,9 +390,14 @@ const styles = StyleSheet.create({
   },
   switchInputText: {
     ...typography.bodySm,
-    color: colors.font_brand,
     alignSelf: "flex-end",
     marginTop: 6,
     marginRight: 4,
+  },
+  themeToggle: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    zIndex: 100,
   },
 });

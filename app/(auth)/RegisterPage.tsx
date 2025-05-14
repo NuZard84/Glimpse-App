@@ -1,6 +1,8 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
+import ThemeToggleIcon from "@/common/ThemeToggleIcon";
+import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -22,9 +24,9 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
-import { colors } from "../../constants/Colors";
 
 export default function RegisterPage() {
+  const colors = useAppColors();
   const [username, setUsername] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -117,17 +119,29 @@ export default function RegisterPage() {
 
   return (
     <PageContainer>
+      <ThemeToggleIcon style={styles.themeToggle} size={22} />
       <View style={styles.container}>
         <Animated.View style={[styles.headerContainer, logoAnimatedStyle]}>
           <Image
             source={require("../../assets/images/logo.png")}
             style={styles.logo}
           />
-          <Animated.Text style={[typography.h1, headerTextStyle]}>
+          <Animated.Text
+            style={[
+              typography.h1,
+              headerTextStyle,
+              { color: colors.font_dark },
+            ]}
+          >
             Sign up
           </Animated.Text>
           <Animated.Text
-            style={[typography.body, styles.subheaderText, headerTextStyle]}
+            style={[
+              typography.body,
+              styles.subheaderText,
+              headerTextStyle,
+              { color: colors.font_dark },
+            ]}
           >
             Join us and enjoy exclusive features tailored just for you.
           </Animated.Text>
@@ -136,7 +150,13 @@ export default function RegisterPage() {
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
           <View style={styles.inputContainer}>
             <TextInput
-              style={styles.textInput}
+              style={[
+                styles.textInput,
+                {
+                  backgroundColor: colors.bg_gray,
+                  color: colors.font_dark,
+                },
+              ]}
               cursorColor={colors.font_brand}
               placeholder="Username"
               placeholderTextColor={colors.font_placeholder}
@@ -165,9 +185,14 @@ export default function RegisterPage() {
             />
           </View>
 
-          <View style={styles.passwordContainer}>
+          <View
+            style={[
+              styles.passwordContainer,
+              { backgroundColor: colors.bg_gray },
+            ]}
+          >
             <TextInput
-              style={styles.passwordInput}
+              style={[styles.passwordInput, { color: colors.font_dark }]}
               cursorColor={colors.font_brand}
               placeholder="Password"
               placeholderTextColor={colors.font_placeholder}
@@ -192,11 +217,17 @@ export default function RegisterPage() {
             bgColor={colors.bg_light_brand}
             onPress={() => {}}
           />
-          <Text style={[typography.bodySm, { textAlign: "center" }]}>
+          <Text
+            style={[
+              typography.bodySm,
+              { color: colors.font_dark },
+              { textAlign: "center" },
+            ]}
+          >
             Already have an account?{" "}
             <Text
               onPress={() => {
-                router.push("/(auth)/LoginPage");
+                router.navigate("/(auth)/LoginPage");
               }}
               style={[typography.bodySm, { color: colors.font_brand }]}
             >
@@ -206,9 +237,21 @@ export default function RegisterPage() {
         </Animated.View>
 
         <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
-          <View style={styles.dividerLine} />
-          <Text style={[typography.bodySm, styles.dividerText]}>or</Text>
-          <View style={styles.dividerLine} />
+          <View
+            style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
+          />
+          <Text
+            style={[
+              typography.bodySm,
+              styles.dividerText,
+              { color: colors.font_dark },
+            ]}
+          >
+            or
+          </Text>
+          <View
+            style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
+          />
         </Animated.View>
 
         <Animated.View
@@ -222,7 +265,13 @@ export default function RegisterPage() {
         </Animated.View>
 
         <Animated.View style={[styles.termsContainer, termsAnimatedStyle]}>
-          <Text style={[typography.bodySm, { textAlign: "center" }]}>
+          <Text
+            style={[
+              typography.bodySm,
+              { textAlign: "center" },
+              { color: colors.font_dark },
+            ]}
+          >
             By signing to create an account I accept Company&apos;s{" "}
             <Text
               onPress={() => {}}
@@ -274,18 +323,15 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: "100%",
-    backgroundColor: colors.bg_gray,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   passwordContainer: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.bg_gray,
     borderRadius: 16,
     paddingVertical: 4,
     paddingHorizontal: 16,
@@ -293,7 +339,6 @@ const styles = StyleSheet.create({
   passwordInput: {
     flex: 1,
     paddingVertical: 10,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   buttonsContainer: {
@@ -316,11 +361,9 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.bg_gray,
   },
   dividerText: {
     marginHorizontal: 10,
-    color: colors.font_dark,
   },
   googleButtonContainer: {
     width: "100%",
@@ -342,5 +385,11 @@ const styles = StyleSheet.create({
     right: 16,
     top: 14,
     zIndex: 1,
+  },
+  themeToggle: {
+    position: "absolute",
+    top: 20,
+    right: 20,
+    zIndex: 100,
   },
 });

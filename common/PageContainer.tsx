@@ -1,4 +1,4 @@
-import { colors } from "@/constants/Colors";
+import { useAppColors } from "@/constants/Colors";
 import { StyleProp, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,6 +13,8 @@ export default function PageContainer({
   customStyle,
   isCenter = true,
 }: PageContainerProps) {
+  const colors = useAppColors();
+
   return (
     <SafeAreaView
       style={[

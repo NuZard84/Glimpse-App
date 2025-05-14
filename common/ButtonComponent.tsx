@@ -1,4 +1,4 @@
-import { colors } from "@/constants/Colors";
+import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import {
   Image,
@@ -24,12 +24,16 @@ export default function ButtonComponent({
   text,
   onPress,
   style,
-  textColor = colors.font_dark,
-  bgColor = colors.bg_gray,
+  textColor,
+  bgColor,
   icon,
   iconHeight = 24,
   iconWidth = 24,
 }: ButtonComponentProps) {
+  const themeColors = useAppColors();
+  const finalTextColor = textColor || themeColors.font_dark;
+  const finalBgColor = bgColor || themeColors.bg_gray;
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -45,7 +49,7 @@ export default function ButtonComponent({
               paddingVertical: 14,
               flexDirection: "row",
             },
-        { backgroundColor: bgColor, gap: 8 },
+        { backgroundColor: finalBgColor, gap: 8 },
       ]}
     >
       {icon && (
@@ -54,7 +58,7 @@ export default function ButtonComponent({
           style={{ width: iconWidth, height: iconHeight, objectFit: "contain" }}
         />
       )}
-      <Text style={[typography.button, { color: textColor }]}>{text}</Text>
+      <Text style={[typography.button, { color: finalTextColor }]}>{text}</Text>
     </TouchableOpacity>
   );
 }

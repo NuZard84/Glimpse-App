@@ -1,16 +1,21 @@
+import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { screenNames } from "@/constants/screenNames";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import { useFontLoader } from "../utils/fonts";
 
 // Keep the splash screen visible while fonts are loading
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function AppLayout() {
   const { fontsLoaded, error } = useFontLoader();
+  const { theme, colors } = useTheme();
+
+  console.log("theme", theme, colors);
 
   useEffect(() => {
     if (fontsLoaded || error) {
@@ -26,14 +31,16 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
+      <StatusBar style={theme === "dark" ? "light" : "dark"} />
       <Stack
         screenOptions={{
           headerShown: true,
-          contentStyle: { backgroundColor: "white" },
+          contentStyle: { backgroundColor: colors.bg_offwhite },
           headerStyle: {
-            backgroundColor: "white",
+            backgroundColor: colors.bg_offwhite,
           },
+          headerTintColor: colors.font_dark,
+          headerRight: () => <ThemeToggleIcon size={18} />,
         }}
       >
         <Stack.Screen
@@ -42,5 +49,13 @@ export default function RootLayout() {
         />
       </Stack>
     </SafeAreaProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <AppLayout />
+    </ThemeProvider>
   );
 }

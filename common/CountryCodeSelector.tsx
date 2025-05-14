@@ -1,4 +1,4 @@
-import { colors } from "@/constants/Colors";
+import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { Entypo } from "@expo/vector-icons";
 import React, { useState } from "react";
@@ -42,6 +42,7 @@ export default function CountryCodeSelector({
   setPhoneNumber,
   placeholder = "Phone number",
 }: CountryCodeSelectorProps) {
+  const colors = useAppColors();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countries[0]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,19 +60,50 @@ export default function CountryCodeSelector({
     setModalVisible(false);
   };
 
+  const containerStyle = {
+    backgroundColor: colors.bg_gray,
+  };
+
+  const codeTextStyle = {
+    color: colors.font_dark,
+  };
+
+  const phoneInputStyle = {
+    color: colors.font_dark,
+  };
+
+  const modalContentStyle = {
+    backgroundColor: colors.bg_offwhite,
+  };
+
+  const searchInputStyle = {
+    backgroundColor: colors.bg_gray,
+    color: colors.font_dark,
+  };
+
+  const countryNameStyle = {
+    color: colors.font_dark,
+  };
+
+  const countryCodeStyle = {
+    color: colors.font_dark,
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       <TouchableOpacity
         style={styles.codeSelector}
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.flagText}>{selectedCountry.flag}</Text>
-        <Text style={styles.codeText}>{selectedCountry.code}</Text>
+        <Text style={[styles.codeText, codeTextStyle]}>
+          {selectedCountry.code}
+        </Text>
         <Entypo name="chevron-down" size={16} color={colors.font_dark} />
       </TouchableOpacity>
 
       <TextInput
-        style={styles.phoneInput}
+        style={[styles.phoneInput, phoneInputStyle]}
         value={phoneNumber}
         onChangeText={setPhoneNumber}
         placeholder={placeholder}
@@ -87,16 +119,18 @@ export default function CountryCodeSelector({
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, modalContentStyle]}>
             <View style={styles.modalHeader}>
-              <Text style={typography.h2}>Select Country</Text>
+              <Text style={[typography.h2, { color: colors.font_dark }]}>
+                Select Country
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <Entypo name="cross" size={24} color={colors.font_dark} />
               </TouchableOpacity>
             </View>
 
             <TextInput
-              style={styles.searchInput}
+              style={[styles.searchInput, searchInputStyle]}
               placeholder="Search country..."
               placeholderTextColor={colors.font_placeholder}
               value={searchQuery}
@@ -113,8 +147,12 @@ export default function CountryCodeSelector({
                   onPress={() => selectCountry(item)}
                 >
                   <Text style={styles.flagText}>{item.flag}</Text>
-                  <Text style={styles.countryName}>{item.name}</Text>
-                  <Text style={styles.countryCode}>{item.code}</Text>
+                  <Text style={[styles.countryName, countryNameStyle]}>
+                    {item.name}
+                  </Text>
+                  <Text style={[styles.countryCode, countryCodeStyle]}>
+                    {item.code}
+                  </Text>
                 </TouchableOpacity>
               )}
               showsVerticalScrollIndicator={false}
@@ -130,7 +168,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     flexDirection: "row",
-    backgroundColor: colors.bg_gray,
     borderRadius: 16,
     overflow: "hidden",
   },
@@ -149,7 +186,6 @@ const styles = StyleSheet.create({
   },
   codeText: {
     fontSize: 14,
-    color: colors.font_dark,
     marginRight: 4,
     fontFamily: "CalSans",
   },
@@ -157,7 +193,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     paddingHorizontal: 12,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   modalContainer: {
@@ -169,7 +204,6 @@ const styles = StyleSheet.create({
   modalContent: {
     width: "90%",
     height: "70%",
-    backgroundColor: colors.bg_offwhite,
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -185,12 +219,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   searchInput: {
-    backgroundColor: colors.bg_gray,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 14,
     marginBottom: 16,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   countryItem: {
@@ -204,12 +236,10 @@ const styles = StyleSheet.create({
     ...typography.body,
     flex: 1,
     marginLeft: 10,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
   countryCode: {
     fontSize: 14,
-    color: colors.font_dark,
     fontFamily: "CalSans",
   },
 });

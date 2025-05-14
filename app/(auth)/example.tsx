@@ -1,11 +1,24 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors } from "../../constants/Colors";
+
+import { useAppColors } from "@/constants/Colors";
 import { typography } from "../../constants/styles";
 
 export default function Example() {
+  const colors = useAppColors();
+
+  const dynamicStyles = {
+    container: {
+      backgroundColor: colors.bg_offwhite,
+    },
+    card: {
+      backgroundColor: colors.bg_offwhite,
+      shadowColor: colors.font_dark,
+    },
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
       {/* Typography Examples */}
       <View style={styles.section}>
         <Text style={[typography.h1, { color: colors.font_dark }]}>
@@ -79,7 +92,7 @@ export default function Example() {
         <Text style={[typography.h2, { color: colors.font_brand }]}>
           Styled Component Example
         </Text>
-        <View style={styles.card}>
+        <View style={[styles.card, dynamicStyles.card]}>
           <Text style={[typography.body, { color: colors.font_dark }]}>
             This card combines multiple styles
           </Text>
@@ -93,7 +106,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: colors.bg_offwhite,
   },
   section: {
     marginBottom: 24,
@@ -114,11 +126,9 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
   },
   card: {
-    backgroundColor: colors.bg_offwhite,
     padding: 16,
     borderRadius: 8,
     marginTop: 12,
-    shadowColor: colors.font_dark,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
