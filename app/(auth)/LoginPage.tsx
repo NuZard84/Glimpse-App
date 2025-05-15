@@ -4,7 +4,7 @@ import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Fragment, useEffect, useState } from "react";
 import {
@@ -28,7 +28,7 @@ import Animated, {
 
 export default function LoginPage() {
   const colors = useAppColors();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -114,6 +114,11 @@ export default function LoginPage() {
 
   const toggleInputMethod = () => {
     setUsePhone(!usePhone);
+    if (usePhone) {
+      setEmail("");
+    } else {
+      setPhoneNumber("");
+    }
   };
 
   return (
@@ -159,7 +164,7 @@ export default function LoginPage() {
                   style={styles.inputToggleIcon}
                   onPress={toggleInputMethod}
                 >
-                  <AntDesign name="user" size={20} color={colors.font_brand} />
+                  <Feather name="mail" size={20} color={colors.font_brand} />
                 </TouchableOpacity>
               </View>
             </Fragment>
@@ -175,10 +180,10 @@ export default function LoginPage() {
                     },
                   ]}
                   cursorColor={colors.font_brand}
-                  placeholder="Username"
+                  placeholder="Email"
                   placeholderTextColor={colors.font_placeholder}
-                  value={username}
-                  onChangeText={setUsername}
+                  value={email}
+                  onChangeText={setEmail}
                 />
                 <TouchableOpacity
                   style={styles.inputToggleIcon}
@@ -215,7 +220,11 @@ export default function LoginPage() {
           </View>
 
           <View style={styles.forgotPasswordContainer}>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity
+              onPress={() => {
+                router.push("/(auth)/ForgotPassword");
+              }}
+            >
               <Text
                 style={[
                   styles.forgotPasswordText,
@@ -254,7 +263,7 @@ export default function LoginPage() {
           </Text>
         </Animated.View>
 
-        <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
+        {/* <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
           <View
             style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
           />
@@ -278,9 +287,9 @@ export default function LoginPage() {
           <ButtonComponent
             text="Login with Google"
             onPress={() => {}}
-            icon={require("../../assets/images/google.png")}
+            imageIcon={require("../../assets/images/google.png")}
           />
-        </Animated.View>
+        </Animated.View> */}
       </View>
     </PageContainer>
   );
@@ -396,7 +405,7 @@ const styles = StyleSheet.create({
   },
   themeToggle: {
     position: "absolute",
-    top: 20,
+    top: 40,
     right: 20,
     zIndex: 100,
   },

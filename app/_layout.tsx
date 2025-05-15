@@ -1,4 +1,3 @@
-import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { screenNames } from "@/constants/screenNames";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -7,15 +6,12 @@ import React, { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider, useTheme } from "../context/ThemeContext";
 import { useFontLoader } from "../utils/fonts";
-
 // Keep the splash screen visible while fonts are loading
 SplashScreen.preventAutoHideAsync();
 
 function AppLayout() {
   const { fontsLoaded, error } = useFontLoader();
   const { theme, colors } = useTheme();
-
-  console.log("theme", theme, colors);
 
   useEffect(() => {
     if (fontsLoaded || error) {
@@ -24,7 +20,6 @@ function AppLayout() {
     }
   }, [fontsLoaded, error]);
 
-  // Don't render the app until fonts are loaded
   if (!fontsLoaded && !error) {
     return null;
   }
@@ -40,7 +35,6 @@ function AppLayout() {
             backgroundColor: colors.bg_offwhite,
           },
           headerTintColor: colors.font_dark,
-          headerRight: () => <ThemeToggleIcon size={18} />,
         }}
       >
         <Stack.Screen

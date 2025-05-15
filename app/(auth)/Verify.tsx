@@ -1,18 +1,16 @@
 import ButtonComponent from "@/common/ButtonComponent";
-import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
-import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
-import { AntDesign, Entypo, Feather } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Image,
-  Pressable,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import Animated, {
@@ -25,14 +23,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export default function RegisterPage() {
+export default function VerifyPage() {
   const colors = useAppColors();
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [verificationMethod, setVerificationMethod] = useState("phone");
+  const [phoneOtpSent, setPhoneOtpSent] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const inputRefs = useRef<TextInput[]>([]);
 
-  // Animation values
   const logoOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
   const headerTextOpacity = useSharedValue(0);
@@ -41,7 +39,6 @@ export default function RegisterPage() {
   const formTranslateY = useSharedValue(30);
   const buttonsOpacity = useSharedValue(0);
   const buttonsTranslateY = useSharedValue(30);
-  const termsOpacity = useSharedValue(0);
 
   // Logo animation styles
   const logoAnimatedStyle = useAnimatedStyle(() => {
@@ -75,13 +72,6 @@ export default function RegisterPage() {
     };
   });
 
-  // Terms animation styles
-  const termsAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: termsOpacity.value,
-    };
-  });
-
   // Trigger animations on component mount
   useEffect(() => {
     // Staggered animations for a smooth entry
@@ -107,19 +97,89 @@ export default function RegisterPage() {
     // Buttons animations with even further delay
     buttonsOpacity.value = withDelay(900, withTiming(1, { duration: 600 }));
     buttonsTranslateY.value = withDelay(900, withSpring(0, { damping: 12 }));
-
-    // Terms animation
-    termsOpacity.value = withDelay(1200, withTiming(1, { duration: 600 }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  // Handle OTP input changes
+  const handleOtpChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    // Only allow numeric input
+    const numericValue = text.replace(/[^0-9]/g, "");
+    newOtp[index] = numericValue;
+    setOtp(newOtp);
+
+    // Auto focus to next input if current input is filled
+    if (numericValue && index < 3) {
+      inputRefs.current[index + 1]?.focus();
+    }
   };
+
+  // Handle key press for backspace functionality
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  // Handle verification method change
+  const handleVerificationMethodChange = () => {
+    // First fade out the form
+    formOpacity.value = withTiming(0, { duration: 300 });
+    formTranslateY.value = withTiming(10, { duration: 300 });
+
+    // Then change the method and fade in with new content
+    setTimeout(() => {
+      setVerificationMethod(verificationMethod === "phone" ? "email" : "phone");
+
+      // Fade in with the new content
+      formOpacity.value = withTiming(1, { duration: 300 });
+      formTranslateY.value = withTiming(0, { duration: 300 });
+    }, 300);
+
+    setOtp(["", "", "", ""]);
+    inputRefs.current[0]?.focus();
+  };
+
+  const handleSendOTP = () => {
+    if (verificationMethod === "phone") {
+      setPhoneOtpSent(true);
+    } else {
+      setEmailOtpSent(true);
+    }
+
+    inputRefs.current[0]?.focus();
+  };
+
+  const handleVerifyOTP = () => {
+    console.log("verifying otp", otp.join(""));
+  };
+
+  const isOtpSent =
+    verificationMethod === "phone" ? phoneOtpSent : emailOtpSent;
+
+  const primaryButtonText = isOtpSent ? "Verify" : "Send OTP";
+  const primaryButtonAction = isOtpSent ? handleVerifyOTP : handleSendOTP;
 
   return (
     <PageContainer>
-      <ThemeToggleIcon style={styles.themeToggle} size={22} />
+      <TouchableOpacity
+        onPress={() => {
+          router.back();
+        }}
+        style={{
+          position: "absolute",
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          top: 40,
+          left: 20,
+          zIndex: 100,
+          gap: 8,
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color={colors.font_dark} />
+        <Text style={[{ color: colors.font_dark }, typography.h3]}>Back</Text>
+      </TouchableOpacity>
       <View style={styles.container}>
         <Animated.View style={[styles.headerContainer, logoAnimatedStyle]}>
           <Image
@@ -133,7 +193,7 @@ export default function RegisterPage() {
               { color: colors.font_dark },
             ]}
           >
-            Sign up
+            Verify {verificationMethod === "phone" ? "Phone" : "Email"}
           </Animated.Text>
           <Animated.Text
             style={[
@@ -143,102 +203,80 @@ export default function RegisterPage() {
               { color: colors.font_dark },
             ]}
           >
-            Join us and enjoy exclusive features tailored just for you.
+            {isOtpSent
+              ? `Enter the 4-digit code sent to your ${
+                  verificationMethod === "phone"
+                    ? "phone number"
+                    : "email address"
+                }`
+              : `Click Send OTP to receive a verification code on your ${
+                  verificationMethod === "phone"
+                    ? "phone number"
+                    : "email address"
+                }`}
           </Animated.Text>
         </Animated.View>
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={[
-                styles.textInput,
-                {
-                  backgroundColor: colors.bg_gray,
-                  color: colors.font_dark,
-                },
-              ]}
-              cursorColor={colors.font_brand}
-              placeholder="Email"
-              placeholderTextColor={colors.font_placeholder}
-              value={email}
-              onChangeText={setEmail}
-            />
-            <Feather
-              name="mail"
-              size={20}
-              color={colors.font_placeholder}
-              style={styles.inputIcon}
-            />
-          </View>
+          {isOtpSent && (
+            <Text style={[typography.body, { color: colors.font_dark }]}>
+              {verificationMethod === "phone"
+                ? "We've sent an OTP to +1 234 567 8901"
+                : "We've sent an OTP to example@email.com"}
+            </Text>
+          )}
 
-          <View style={styles.inputContainer}>
-            <CountryCodeSelector
-              phoneNumber={phoneNumber}
-              setPhoneNumber={setPhoneNumber}
-              placeholder="Phone number"
-            />
-            <AntDesign
-              name="phone"
-              size={20}
-              color={colors.font_placeholder}
-              style={styles.inputIcon}
-            />
-          </View>
-
-          <View
-            style={[
-              styles.passwordContainer,
-              { backgroundColor: colors.bg_gray },
-            ]}
-          >
-            <TextInput
-              style={[styles.passwordInput, { color: colors.font_dark }]}
-              cursorColor={colors.font_brand}
-              placeholder="Password"
-              placeholderTextColor={colors.font_placeholder}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-            />
-            <Pressable onPress={togglePasswordVisibility}>
-              <Entypo
-                name={showPassword ? "eye" : "eye-with-line"}
-                size={20}
-                color={colors.font_placeholder}
+          <View style={styles.otpContainer}>
+            {[0, 1, 2, 3].map((index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => {
+                  if (ref) inputRefs.current[index] = ref;
+                }}
+                style={[
+                  styles.otpInput,
+                  { backgroundColor: colors.bg_gray, color: colors.font_dark },
+                  !isOtpSent && { opacity: 0.5 },
+                ]}
+                maxLength={1}
+                keyboardType="numeric"
+                value={otp[index]}
+                onChangeText={(text) => handleOtpChange(text, index)}
+                onKeyPress={(e) => handleKeyPress(e, index)}
+                cursorColor={colors.font_brand}
+                editable={isOtpSent}
               />
-            </Pressable>
+            ))}
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.buttonsContainer, buttonsAnimatedStyle]}>
           <ButtonComponent
-            text="Signup"
+            text={primaryButtonText}
             textColor={colors.font_brand}
             bgColor={colors.bg_light_brand}
-            onPress={() => {
-              router.push("/(auth)/Verify");
-            }}
+            onPress={primaryButtonAction}
           />
-          <Text
-            style={[
-              typography.bodySm,
-              { color: colors.font_dark },
-              { textAlign: "center" },
-            ]}
-          >
-            Already have an account?{" "}
+
+          {isOtpSent && (
             <Text
-              onPress={() => {
-                router.navigate("/(auth)/LoginPage");
-              }}
-              style={[typography.bodySm, { color: colors.font_brand }]}
+              style={[
+                typography.bodySm,
+                { color: colors.font_dark, textAlign: "center" },
+              ]}
             >
-              Login
+              Didn&apos;t receive it?{" "}
+              <Text
+                onPress={handleSendOTP}
+                style={[typography.bodySm, { color: colors.font_brand }]}
+              >
+                Resend
+              </Text>
             </Text>
-          </Text>
+          )}
         </Animated.View>
 
-        {/* <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
+        <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
           <View
             style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
           />
@@ -254,36 +292,19 @@ export default function RegisterPage() {
           <View
             style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
           />
-        </Animated.View> */}
-
-        {/* <Animated.View
-          style={[styles.googleButtonContainer, buttonsAnimatedStyle]}
-        >
-          <ButtonComponent
-            text="Signup with Google"
-            onPress={() => {}}
-            imageIcon={require("../../assets/images/google.png")}
-          />
-        </Animated.View> */}
+        </Animated.View>
 
         <Animated.View
-          style={[styles.termsContainer, termsAnimatedStyle, { marginTop: 64 }]}
+          style={[styles.alternateMethodContainer, buttonsAnimatedStyle]}
         >
-          <Text
-            style={[
-              typography.bodySm,
-              { textAlign: "center" },
-              { color: colors.font_dark },
-            ]}
-          >
-            By signing to create an account I accept Company&apos;s{" "}
-            <Text
-              onPress={() => {}}
-              style={[typography.bodySm, { color: colors.font_brand }]}
-            >
-              Terms of Use and Privacy Policy
-            </Text>
-          </Text>
+          <ButtonComponent
+            text={
+              verificationMethod === "phone"
+                ? "Verify using Email"
+                : "Verify using Phone"
+            }
+            onPress={handleVerificationMethodChange}
+          />
         </Animated.View>
       </View>
     </PageContainer>
@@ -325,24 +346,19 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingHorizontal: 16,
   },
-  textInput: {
-    width: "100%",
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    fontFamily: "CalSans",
-  },
-  passwordContainer: {
-    width: "100%",
+  otpContainer: {
     flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    borderRadius: 16,
-    paddingVertical: 4,
-    paddingHorizontal: 16,
+    gap: 8,
+    marginTop: 8,
   },
-  passwordInput: {
-    flex: 1,
-    paddingVertical: 10,
+  otpInput: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    textAlign: "center",
+    fontSize: 20,
     fontFamily: "CalSans",
   },
   buttonsContainer: {
@@ -353,7 +369,6 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 16,
     paddingHorizontal: 16,
-    marginTop: 10,
   },
   dividerContainer: {
     width: "100%",
@@ -369,31 +384,8 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 10,
   },
-  googleButtonContainer: {
+  alternateMethodContainer: {
     width: "100%",
     paddingHorizontal: 16,
-  },
-  termsContainer: {
-    width: "100%",
-    paddingHorizontal: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 16,
-  },
-  inputContainer: {
-    width: "100%",
-    position: "relative",
-  },
-  inputIcon: {
-    position: "absolute",
-    right: 16,
-    top: 14,
-    zIndex: 1,
-  },
-  themeToggle: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-    zIndex: 100,
   },
 });

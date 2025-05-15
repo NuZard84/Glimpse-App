@@ -13,6 +13,15 @@ export default function AuthLayout() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name={screenNames.LOGIN} options={{ headerShown: false }} />
+
+      <Stack.Screen
+        name={screenNames.VERIFY}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={screenNames.FORGOT_PASSWORD}
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

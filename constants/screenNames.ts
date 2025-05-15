@@ -3,5 +3,7 @@ export const screenNames = {
     WELCOME: "Welcome",
     LOGIN: "LoginPage",
     REGISTER: "RegisterPage",
+    VERIFY: "Verify",
+    FORGOT_PASSWORD: "ForgotPassword",
 };
 

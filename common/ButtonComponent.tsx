@@ -15,7 +15,8 @@ type ButtonComponentProps = {
   style?: StyleProp<ViewStyle>;
   textColor?: string;
   bgColor?: string;
-  icon?: ImageSourcePropType;
+  imageIcon?: ImageSourcePropType;
+  vectorIcon?: React.ReactNode;
   iconHeight?: number;
   iconWidth?: number;
 };
@@ -26,7 +27,8 @@ export default function ButtonComponent({
   style,
   textColor,
   bgColor,
-  icon,
+  imageIcon,
+  vectorIcon,
   iconHeight = 24,
   iconWidth = 24,
 }: ButtonComponentProps) {
@@ -52,12 +54,17 @@ export default function ButtonComponent({
         { backgroundColor: finalBgColor, gap: 8 },
       ]}
     >
-      {icon && (
+      {imageIcon && (
         <Image
-          source={icon}
-          style={{ width: iconWidth, height: iconHeight, objectFit: "contain" }}
+          source={imageIcon}
+          style={{
+            width: iconWidth,
+            height: iconHeight,
+            objectFit: "contain",
+          }}
         />
       )}
+      {vectorIcon && vectorIcon}
       <Text style={[typography.button, { color: finalTextColor }]}>{text}</Text>
     </TouchableOpacity>
   );

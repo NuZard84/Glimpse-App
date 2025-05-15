@@ -3,6 +3,7 @@ import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { Image, StyleSheet, View } from "react-native";
@@ -120,21 +121,23 @@ export default function Welcome() {
         </View>
         <Animated.View style={[styles.signupContainer, buttonContainerStyle]}>
           <ButtonComponent
-            text="Sign up with Email"
+            text="Sign up"
             onPress={() => {
               router.push("/(auth)/RegisterPage");
             }}
             bgColor={colors.bg_gray}
             textColor={colors.font_dark}
-            icon={require("../../assets/images/mail.png")}
+            vectorIcon={
+              <MaterialIcons name="login" size={24} color={colors.font_dark} />
+            }
           />
-          <ButtonComponent
+          {/* <ButtonComponent
             text="Sign up with Google"
             onPress={() => {}}
             bgColor={colors.bg_gray}
             textColor={colors.font_dark}
             icon={require("../../assets/images/google.png")}
-          />
+          /> */}
         </Animated.View>
       </View>
     </PageContainer>
@@ -177,7 +180,7 @@ const styles = StyleSheet.create({
   },
   themeToggle: {
     position: "absolute",
-    top: 20,
+    top: 40,
     right: 20,
     zIndex: 100,
   },
