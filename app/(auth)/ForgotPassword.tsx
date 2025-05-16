@@ -1,11 +1,10 @@
 import ButtonComponent from "@/common/ButtonComponent";
-import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
-import { AntDesign, Feather, Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -27,9 +26,7 @@ import Animated, {
 export default function ForgotPasswordPage() {
   const colors = useAppColors();
   const [otp, setOtp] = useState(["", "", "", ""]);
-  const [resetMethod, setResetMethod] = useState("email");
   const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentStep, setCurrentStep] = useState("selectMethod");
@@ -134,28 +131,9 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const toggleResetMethod = () => {
-    //  fade out the form
-    formOpacity.value = withTiming(0, { duration: 300 });
-    formTranslateY.value = withTiming(10, { duration: 300 });
-
-    setTimeout(() => {
-      setResetMethod(resetMethod === "email" ? "phone" : "email");
-
-      // Fade in with the new content
-      formOpacity.value = withTiming(1, { duration: 300 });
-      formTranslateY.value = withTiming(0, { duration: 300 });
-    }, 300);
-  };
-
   const handleSendOTP = () => {
-    if (resetMethod === "email" && !email) {
+    if (!email) {
       // Show error for email
-      return;
-    }
-
-    if (resetMethod === "phone" && !phoneNumber) {
-      // Show error for phone
       return;
     }
 
@@ -241,9 +219,9 @@ export default function ForgotPasswordPage() {
   const getScreenSubtitle = () => {
     switch (currentStep) {
       case "selectMethod":
-        return "Choose a method to reset your password";
+        return "Enter your email to reset your password";
       case "verification":
-        return "Enter the verification code sent to your account";
+        return "Enter the verification code sent to your email";
       case "resetPassword":
         return "Create a new secure password";
       default:
@@ -301,52 +279,22 @@ export default function ForgotPasswordPage() {
 
         {currentStep === "selectMethod" && (
           <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-            {resetMethod === "email" ? (
-              <Fragment>
-                <View style={styles.inputContainer}>
-                  <TextInput
-                    style={[
-                      styles.textInput,
-                      {
-                        backgroundColor: colors.bg_gray,
-                        color: colors.font_dark,
-                      },
-                    ]}
-                    cursorColor={colors.font_brand}
-                    placeholder="Email"
-                    placeholderTextColor={colors.font_placeholder}
-                    value={email}
-                    onChangeText={setEmail}
-                  />
-                  <TouchableOpacity
-                    style={styles.inputToggleIcon}
-                    onPress={toggleResetMethod}
-                  >
-                    <AntDesign
-                      name="phone"
-                      size={20}
-                      color={colors.font_brand}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </Fragment>
-            ) : (
-              <Fragment>
-                <View style={styles.inputContainer}>
-                  <CountryCodeSelector
-                    phoneNumber={phoneNumber}
-                    setPhoneNumber={setPhoneNumber}
-                    placeholder="Phone number"
-                  />
-                  <TouchableOpacity
-                    style={styles.inputToggleIcon}
-                    onPress={toggleResetMethod}
-                  >
-                    <Feather name="mail" size={20} color={colors.font_brand} />
-                  </TouchableOpacity>
-                </View>
-              </Fragment>
-            )}
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: colors.bg_gray,
+                    color: colors.font_dark,
+                  },
+                ]}
+                cursorColor={colors.font_brand}
+                placeholder="Email"
+                placeholderTextColor={colors.font_placeholder}
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
           </Animated.View>
         )}
 
@@ -375,7 +323,7 @@ export default function ForgotPasswordPage() {
                 ]}
               >
                 {" "}
-                {resetMethod === "email" ? email : phoneNumber}
+                {email}
               </Text>
             </Text>
 
@@ -520,6 +468,10 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingHorizontal: 16,
   },
+  inputContainer: {
+    width: "100%",
+    position: "relative",
+  },
   textInput: {
     width: "100%",
     borderRadius: 16,
@@ -532,7 +484,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 8,
-    marginTop: 8,
+    marginTop: 16,
   },
   otpInput: {
     width: 50,
@@ -550,16 +502,5 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 16,
     paddingHorizontal: 16,
-    marginTop: 10,
-  },
-  inputContainer: {
-    width: "100%",
-    position: "relative",
-  },
-  inputToggleIcon: {
-    position: "absolute",
-    right: 16,
-    top: 14,
-    zIndex: 1,
   },
 });
