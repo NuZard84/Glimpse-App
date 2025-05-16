@@ -183,9 +183,34 @@ export default function VerifyPage() {
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
           {emailOtpSent && (
-            <Text style={[typography.body, { color: colors.font_dark }]}>
-              We&apos;ve sent an OTP to example@email.com
-            </Text>
+            <View style={styles.emailNotificationContainer}>
+              <Text
+                style={[
+                  typography.body,
+                  {
+                    color: colors.font_dark,
+                    textAlign: "center",
+                    width: "90%",
+                  },
+                ]}
+              >
+                We&apos;ve sent an OTP to
+                <Text
+                  style={[
+                    typography.body,
+                    {
+                      color: colors.font_brand,
+                      textAlign: "center",
+                      fontWeight: "bold",
+                      width: "90%",
+                    },
+                  ]}
+                >
+                  {" "}
+                  example@email.com
+                </Text>
+              </Text>
+            </View>
           )}
 
           <View style={styles.otpContainer}>
@@ -276,6 +301,11 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 16,
     paddingHorizontal: 16,
+  },
+  emailNotificationContainer: {
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 8,
   },
   otpContainer: {
     flexDirection: "row",

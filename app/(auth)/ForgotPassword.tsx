@@ -315,7 +315,7 @@ export default function ForgotPasswordPage() {
                 style={[
                   typography.body,
                   {
-                    color: colors.font_dark,
+                    color: colors.font_brand,
                     textAlign: "center",
                     fontWeight: "bold",
                     width: "90%",
