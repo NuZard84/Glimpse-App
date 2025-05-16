@@ -5,5 +5,6 @@ export const screenNames = {
     REGISTER: "RegisterPage",
     VERIFY: "Verify",
     FORGOT_PASSWORD: "ForgotPassword",
+    GET_USERNAME: "Username",
 };
 

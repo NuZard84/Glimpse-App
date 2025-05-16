@@ -22,6 +22,10 @@ export default function AuthLayout() {
         name={screenNames.FORGOT_PASSWORD}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name={screenNames.GET_USERNAME}
+        options={{ headerShown: false }}
+      />
     </Stack>
   );
 }

@@ -1,12 +1,11 @@
 import ButtonComponent from "@/common/ButtonComponent";
-import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
-import { AntDesign, Entypo, Feather } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Pressable,
@@ -28,11 +27,9 @@ import Animated, {
 
 export default function LoginPage() {
   const colors = useAppColors();
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [usePhone, setUsePhone] = useState(true);
 
   // Animation values
   const logoOpacity = useSharedValue(0);
@@ -112,15 +109,6 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
-  const toggleInputMethod = () => {
-    setUsePhone(!usePhone);
-    if (usePhone) {
-      setEmail("");
-    } else {
-      setPhoneNumber("");
-    }
-  };
-
   return (
     <PageContainer>
       <ThemeToggleIcon style={styles.themeToggle} size={22} />
@@ -152,48 +140,22 @@ export default function LoginPage() {
         </Animated.View>
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-          {usePhone ? (
-            <Fragment>
-              <View style={styles.inputContainer}>
-                <CountryCodeSelector
-                  phoneNumber={phoneNumber}
-                  setPhoneNumber={setPhoneNumber}
-                  placeholder="Phone number"
-                />
-                <TouchableOpacity
-                  style={styles.inputToggleIcon}
-                  onPress={toggleInputMethod}
-                >
-                  <Feather name="mail" size={20} color={colors.font_brand} />
-                </TouchableOpacity>
-              </View>
-            </Fragment>
-          ) : (
-            <Fragment>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={[
-                    styles.textInput,
-                    {
-                      backgroundColor: colors.bg_gray,
-                      color: colors.font_dark,
-                    },
-                  ]}
-                  cursorColor={colors.font_brand}
-                  placeholder="Email"
-                  placeholderTextColor={colors.font_placeholder}
-                  value={email}
-                  onChangeText={setEmail}
-                />
-                <TouchableOpacity
-                  style={styles.inputToggleIcon}
-                  onPress={toggleInputMethod}
-                >
-                  <AntDesign name="phone" size={20} color={colors.font_brand} />
-                </TouchableOpacity>
-              </View>
-            </Fragment>
-          )}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[
+                styles.textInput,
+                {
+                  backgroundColor: colors.bg_gray,
+                  color: colors.font_dark,
+                },
+              ]}
+              cursorColor={colors.font_brand}
+              placeholder="Username or Email"
+              placeholderTextColor={colors.font_placeholder}
+              value={usernameOrEmail}
+              onChangeText={setUsernameOrEmail}
+            />
+          </View>
 
           <View
             style={[
@@ -262,34 +224,6 @@ export default function LoginPage() {
             </Text>
           </Text>
         </Animated.View>
-
-        {/* <Animated.View style={[styles.dividerContainer, buttonsAnimatedStyle]}>
-          <View
-            style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
-          />
-          <Text
-            style={[
-              typography.bodySm,
-              styles.dividerText,
-              { color: colors.font_dark },
-            ]}
-          >
-            or
-          </Text>
-          <View
-            style={[styles.dividerLine, { backgroundColor: colors.bg_gray }]}
-          />
-        </Animated.View>
-
-        <Animated.View
-          style={[styles.googleButtonContainer, buttonsAnimatedStyle]}
-        >
-          <ButtonComponent
-            text="Login with Google"
-            onPress={() => {}}
-            imageIcon={require("../../assets/images/google.png")}
-          />
-        </Animated.View> */}
       </View>
     </PageContainer>
   );
@@ -368,40 +302,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginTop: 10,
   },
-  dividerContainer: {
-    width: "100%",
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 8,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    marginHorizontal: 10,
-  },
-  googleButtonContainer: {
-    width: "100%",
-    paddingHorizontal: 16,
-    marginBottom: 30,
-  },
   inputContainer: {
     width: "100%",
     position: "relative",
-  },
-  inputToggleIcon: {
-    position: "absolute",
-    right: 16,
-    top: 14,
-    zIndex: 1,
-  },
-  switchInputText: {
-    ...typography.bodySm,
-    alignSelf: "flex-end",
-    marginTop: 6,
-    marginRight: 4,
   },
   themeToggle: {
     position: "absolute",

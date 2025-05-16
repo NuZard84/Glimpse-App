@@ -4,7 +4,7 @@ import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
@@ -23,11 +23,9 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-export default function VerifyPage() {
+export default function UsernamePage() {
   const colors = useAppColors();
-  const [otp, setOtp] = useState(["", "", "", ""]);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const inputRefs = useRef<TextInput[]>([]);
+  const [username, setUsername] = useState("");
 
   const logoOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
@@ -98,39 +96,21 @@ export default function VerifyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle OTP input changes
-  const handleOtpChange = (text: string, index: number) => {
-    const newOtp = [...otp];
-    // Only allow numeric input
-    const numericValue = text.replace(/[^0-9]/g, "");
-    newOtp[index] = numericValue;
-    setOtp(newOtp);
-
-    // Auto focus to next input if current input is filled
-    if (numericValue && index < 3) {
-      inputRefs.current[index + 1]?.focus();
-    }
+  const handleUsernameChange = (text: string) => {
+    // Allow only alphanumeric characters and underscore
+    const sanitizedText = text.replace(/[^a-zA-Z0-9_]/g, "");
+    setUsername(sanitizedText);
   };
 
-  // Handle key press for backspace functionality
-  const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
+  const handleContinue = () => {
+    // Only proceed if username has at least 3 characters
+    if (username.length < 3) return;
 
-  const handleSendOTP = () => {
-    setEmailOtpSent(true);
-    inputRefs.current[0]?.focus();
+    // Handle username submission
+    console.log("Username submitted:", username);
+    // Navigate to next screen
+    // router.push("/(app)/Home");
   };
-
-  const handleVerifyOTP = () => {
-    console.log("verifying otp", otp.join(""));
-    router.push("/(auth)/Username");
-  };
-
-  const primaryButtonText = emailOtpSent ? "Verify" : "Send OTP";
-  const primaryButtonAction = emailOtpSent ? handleVerifyOTP : handleSendOTP;
 
   return (
     <PageContainer>
@@ -165,7 +145,7 @@ export default function VerifyPage() {
               { color: colors.font_dark },
             ]}
           >
-            Verify Email
+            Almost Done!
           </Animated.Text>
           <Animated.Text
             style={[
@@ -175,67 +155,45 @@ export default function VerifyPage() {
               { color: colors.font_dark },
             ]}
           >
-            {emailOtpSent
-              ? "Enter the 4-digit code sent to your email address"
-              : "Click Send OTP to receive a verification code on your email address"}
+            Choose a unique username for your appearance
           </Animated.Text>
         </Animated.View>
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-          {emailOtpSent && (
-            <Text style={[typography.body, { color: colors.font_dark }]}>
-              We&apos;ve sent an OTP to example@email.com
-            </Text>
-          )}
-
-          <View style={styles.otpContainer}>
-            {[0, 1, 2, 3].map((index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => {
-                  if (ref) inputRefs.current[index] = ref;
-                }}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={[
+                styles.textInput,
+                { backgroundColor: colors.bg_gray, color: colors.font_dark },
+              ]}
+              placeholderTextColor={colors.font_placeholder}
+              placeholder="Username"
+              value={username}
+              onChangeText={handleUsernameChange}
+              cursorColor={colors.font_brand}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            {username.length > 0 && (
+              <Text
                 style={[
-                  styles.otpInput,
-                  { backgroundColor: colors.bg_gray, color: colors.font_dark },
-                  !emailOtpSent && { opacity: 0.5 },
+                  typography.bodySm,
+                  { color: colors.font_dark, marginTop: 8 },
                 ]}
-                maxLength={1}
-                keyboardType="numeric"
-                value={otp[index]}
-                onChangeText={(text) => handleOtpChange(text, index)}
-                onKeyPress={(e) => handleKeyPress(e, index)}
-                cursorColor={colors.font_brand}
-                editable={emailOtpSent}
-              />
-            ))}
+              >
+                This is how other users will identify you
+              </Text>
+            )}
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.buttonsContainer, buttonsAnimatedStyle]}>
           <ButtonComponent
-            text={primaryButtonText}
+            text="Continue"
             textColor={colors.font_brand}
             bgColor={colors.bg_light_brand}
-            onPress={primaryButtonAction}
+            onPress={handleContinue}
           />
-
-          {emailOtpSent && (
-            <Text
-              style={[
-                typography.bodySm,
-                { color: colors.font_dark, textAlign: "center" },
-              ]}
-            >
-              Didn&apos;t receive it?{" "}
-              <Text
-                onPress={handleSendOTP}
-                style={[typography.bodySm, { color: colors.font_brand }]}
-              >
-                Resend
-              </Text>
-            </Text>
-          )}
         </Animated.View>
       </View>
     </PageContainer>
@@ -277,20 +235,17 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingHorizontal: 16,
   },
-  otpContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+  inputContainer: {
+    width: "100%",
     alignItems: "center",
-    gap: 8,
-    marginTop: 8,
   },
-  otpInput: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    textAlign: "center",
-    fontSize: 20,
+  textInput: {
+    width: "100%",
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     fontFamily: "CalSans",
+    fontSize: 16,
   },
   buttonsContainer: {
     display: "flex",
