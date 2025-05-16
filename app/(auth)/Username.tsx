@@ -2,17 +2,8 @@ import ButtonComponent from "@/common/ButtonComponent";
 import PageContainer from "@/common/PageContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Image,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -108,30 +99,10 @@ export default function UsernamePage() {
 
     // Handle username submission
     console.log("Username submitted:", username);
-    // Navigate to next screen
-    // router.push("/(app)/Home");
   };
 
   return (
     <PageContainer>
-      <TouchableOpacity
-        onPress={() => {
-          router.back();
-        }}
-        style={{
-          position: "absolute",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          top: 40,
-          left: 20,
-          zIndex: 100,
-          gap: 8,
-        }}
-      >
-        <Ionicons name="arrow-back" size={24} color={colors.font_dark} />
-        <Text style={[{ color: colors.font_dark }, typography.h3]}>Back</Text>
-      </TouchableOpacity>
       <View style={styles.container}>
         <Animated.View style={[styles.headerContainer, logoAnimatedStyle]}>
           <Image
