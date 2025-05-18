@@ -35,12 +35,14 @@ interface CountryCodeSelectorProps {
   phoneNumber: string;
   setPhoneNumber: (text: string) => void;
   placeholder?: string;
+  error?: string;
 }
 
 export default function CountryCodeSelector({
   phoneNumber,
   setPhoneNumber,
   placeholder = "Phone number",
+  error,
 }: CountryCodeSelectorProps) {
   const colors = useAppColors();
   const [modalVisible, setModalVisible] = useState(false);
@@ -62,6 +64,7 @@ export default function CountryCodeSelector({
 
   const containerStyle = {
     backgroundColor: colors.bg_gray,
+    ...(error ? { borderWidth: 1, borderColor: error } : {}),
   };
 
   const codeTextStyle = {

@@ -1,9 +1,20 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import PageContainer from "@/common/PageContainer";
+import Toast, { ToastType } from "@/common/Toast";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import { setUsernameToProfile } from "@/redux/actions/userActions";
+import { SetUsername } from "@/services/auth";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -13,10 +24,21 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { useDispatch } from "react-redux";
 
 export default function UsernamePage() {
+  const dispatch = useDispatch();
   const colors = useAppColors();
   const [username, setUsername] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [toast, setToast] = useState({
+    visible: false,
+    message: "",
+    type: "info" as ToastType,
+    duration: 1500,
+  });
 
   const logoOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
@@ -26,6 +48,7 @@ export default function UsernamePage() {
   const formTranslateY = useSharedValue(30);
   const buttonsOpacity = useSharedValue(0);
   const buttonsTranslateY = useSharedValue(30);
+  const errorShake = useSharedValue(0);
 
   // Logo animation styles
   const logoAnimatedStyle = useAnimatedStyle(() => {
@@ -59,6 +82,27 @@ export default function UsernamePage() {
     };
   });
 
+  // Error animation style
+  const errorAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: errorShake.value }],
+    };
+  });
+
+  // Handle toast hiding
+  const hideToast = () => {
+    setToast((prev) => ({ ...prev, visible: false }));
+  };
+
+  // Show toast with message and type
+  const showToast = (
+    message: string,
+    type: ToastType = "info",
+    duration: number = 1500
+  ) => {
+    setToast({ visible: true, message, type, duration });
+  };
+
   // Trigger animations on component mount
   useEffect(() => {
     // Staggered animations for a smooth entry
@@ -91,18 +135,95 @@ export default function UsernamePage() {
     // Allow only alphanumeric characters and underscore
     const sanitizedText = text.replace(/[^a-zA-Z0-9_]/g, "");
     setUsername(sanitizedText);
+    setError(""); // Clear error when user types
   };
 
-  const handleContinue = () => {
-    // Only proceed if username has at least 3 characters
-    if (username.length < 3) return;
+  const validateUsername = () => {
+    if (!username.trim()) {
+      setError("Username is required");
+      return false;
+    }
 
-    // Handle username submission
-    console.log("Username submitted:", username);
+    if (username.length < 3) {
+      setError("Username must be at least 3 characters");
+      return false;
+    }
+
+    if (username.length > 20) {
+      setError("Username must be less than 20 characters");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleContinue = async () => {
+    if (!validateUsername()) {
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+
+      showToast(error, "error", 2000);
+      return;
+    }
+
+    setIsLoading(true);
+    showToast("Setting up your username...", "info", 2000);
+
+    try {
+      const response = await SetUsername(username);
+
+      if (
+        response.error ||
+        response.status === "error" ||
+        response.code === 401
+      ) {
+        const errorMessage =
+          response.message || "Failed to set username. Please try again.";
+        setError(errorMessage);
+        showToast(errorMessage, "error", 2000);
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+        console.log("Error response:", JSON.stringify(response));
+      } else {
+        dispatch(setUsernameToProfile(username));
+        showToast("Username set successfully!", "success", 2000);
+
+        router.replace("/(tabs)/Home" as any);
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      setError(errorMessage);
+      showToast(errorMessage, "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <PageContainer>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        duration={toast.duration}
+        onHide={hideToast}
+      />
       <View style={styles.container}>
         <Animated.View style={[styles.headerContainer, logoAnimatedStyle]}>
           <Image
@@ -131,11 +252,14 @@ export default function UsernamePage() {
         </Animated.View>
 
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
-          <View style={styles.inputContainer}>
+          <Animated.View style={[styles.inputContainer, errorAnimatedStyle]}>
             <TextInput
               style={[
                 styles.textInput,
                 { backgroundColor: colors.bg_gray, color: colors.font_dark },
+                error
+                  ? { borderWidth: 1, borderColor: colors.font_error }
+                  : null,
               ]}
               placeholderTextColor={colors.font_placeholder}
               placeholder="Username"
@@ -145,7 +269,21 @@ export default function UsernamePage() {
               autoCapitalize="none"
               autoCorrect={false}
             />
-            {username.length > 0 && (
+            {error ? (
+              <Text
+                style={[
+                  typography.bodySm,
+                  {
+                    color: colors.font_error,
+                    marginTop: 4,
+                    alignSelf: "flex-start",
+                    marginLeft: 4,
+                  },
+                ]}
+              >
+                {error}
+              </Text>
+            ) : username.length > 0 ? (
               <Text
                 style={[
                   typography.bodySm,
@@ -154,16 +292,24 @@ export default function UsernamePage() {
               >
                 This is how other users will identify you
               </Text>
-            )}
-          </View>
+            ) : null}
+          </Animated.View>
         </Animated.View>
 
         <Animated.View style={[styles.buttonsContainer, buttonsAnimatedStyle]}>
           <ButtonComponent
-            text="Continue"
+            text={isLoading ? "Setting up..." : "Continue"}
             textColor={colors.font_brand}
             bgColor={colors.bg_light_brand}
             onPress={handleContinue}
+            disabled={isLoading}
+            icon={
+              isLoading
+                ? () => (
+                    <ActivityIndicator size="small" color={colors.font_brand} />
+                  )
+                : undefined
+            }
           />
         </Animated.View>
       </View>

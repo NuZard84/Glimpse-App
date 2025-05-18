@@ -1,11 +1,19 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import PageContainer from "@/common/PageContainer";
+import Toast, { ToastType } from "@/common/Toast";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import {
+  setUserAccessToken,
+  setUserProfile,
+  setUserVerified,
+} from "@/redux/actions/userActions";
+import { ResetPassqord, SendOTP, VerifyOTP } from "@/services/auth";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   StyleSheet,
   Text,
@@ -22,15 +30,27 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { useDispatch } from "react-redux";
 
 export default function ForgotPasswordPage() {
+  const dispatch = useDispatch();
   const colors = useAppColors();
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentStep, setCurrentStep] = useState("selectMethod");
+  const [isLoading, setIsLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [otpVerified, setOtpVerified] = useState(false);
   const inputRefs = useRef<TextInput[]>([]);
+
+  const [toast, setToast] = useState({
+    visible: false,
+    message: "",
+    type: "info" as ToastType,
+    duration: 1500,
+  });
 
   const logoOpacity = useSharedValue(0);
   const logoScale = useSharedValue(0.8);
@@ -40,6 +60,7 @@ export default function ForgotPasswordPage() {
   const formTranslateY = useSharedValue(30);
   const buttonsOpacity = useSharedValue(0);
   const buttonsTranslateY = useSharedValue(30);
+  const errorShake = useSharedValue(0);
 
   // Logo animation styles
   const logoAnimatedStyle = useAnimatedStyle(() => {
@@ -72,6 +93,27 @@ export default function ForgotPasswordPage() {
       transform: [{ translateY: buttonsTranslateY.value }],
     };
   });
+
+  // Error animation style
+  const errorAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: errorShake.value }],
+    };
+  });
+
+  // Handle toast hiding
+  const hideToast = () => {
+    setToast((prev) => ({ ...prev, visible: false }));
+  };
+
+  // Show toast with message and type
+  const showToast = (
+    message: string,
+    type: ToastType = "info",
+    duration: number = 1500
+  ) => {
+    setToast({ visible: true, message, type, duration });
+  };
 
   // Trigger animations on component mount and when step changes
   useEffect(() => {
@@ -120,7 +162,7 @@ export default function ForgotPasswordPage() {
     newOtp[index] = numericValue;
     setOtp(newOtp);
 
-    if (numericValue && index < 3) {
+    if (numericValue && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
   };
@@ -131,55 +173,261 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (!email) {
-      // Show error for email
+      showToast("Email address is required", "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
       return;
     }
 
-    // First fade out the form
-    formOpacity.value = withTiming(0, { duration: 300 });
-    formTranslateY.value = withTiming(10, { duration: 300 });
+    setIsLoading(true);
+    showToast("Sending verification code...", "info", 2000);
 
-    // Then update the state and fade in with new content
-    setTimeout(() => {
-      setCurrentStep("verification");
+    try {
+      const response = await SendOTP(email);
 
-      // Fade in with the new content
-      formOpacity.value = withTiming(1, { duration: 300 });
-      formTranslateY.value = withTiming(0, { duration: 300 });
-    }, 300);
+      if (response.error || response.status === "error") {
+        const errorMessage =
+          response.message || "Failed to send OTP. Please try again.";
+        showToast(errorMessage, "error", 2000);
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      } else {
+        showToast("Verification code sent successfully", "success", 2000);
+
+        // First fade out the form
+        formOpacity.value = withTiming(0, { duration: 300 });
+        formTranslateY.value = withTiming(10, { duration: 300 });
+
+        // Then update the state and fade in with new content
+        setTimeout(() => {
+          setCurrentStep("verification");
+          // Reset OTP fields
+          setOtp(["", "", "", "", "", ""]);
+
+          // Fade in with the new content
+          formOpacity.value = withTiming(1, { duration: 300 });
+          formTranslateY.value = withTiming(0, { duration: 300 });
+
+          // Focus on first OTP input
+          setTimeout(() => {
+            inputRefs.current[0]?.focus();
+          }, 300);
+        }, 300);
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      showToast(errorMessage, "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleResendOTP = () => {
-    setOtp(["", "", "", ""]);
+  const handleResendOTP = async () => {
+    setOtp(["", "", "", "", "", ""]);
 
-    console.log("Resending OTP");
+    setIsLoading(true);
+    showToast("Resending verification code...", "info", 2000);
+
+    try {
+      const response = await SendOTP(email);
+
+      if (response.error || response.status === "error") {
+        const errorMessage =
+          response.message || "Failed to resend OTP. Please try again.";
+        showToast(errorMessage, "error", 2000);
+      } else {
+        showToast("Verification code resent successfully", "success", 2000);
+        // Focus on first OTP input
+        setTimeout(() => {
+          inputRefs.current[0]?.focus();
+        }, 300);
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      showToast(errorMessage, "error", 2000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerifyOTP = () => {
-    if (otp.some((digit) => digit === "")) {
-      // Show error for incomplete OTP
+  const handleVerifyOTP = async () => {
+    const otpCode = otp.join("");
+
+    if (otpCode.length !== 6) {
+      showToast("Please enter all 6 digits", "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
       return;
     }
 
-    // fade out the form
-    formOpacity.value = withTiming(0, { duration: 300 });
-    formTranslateY.value = withTiming(10, { duration: 300 });
+    setIsLoading(true);
+    showToast("Verifying code...", "info", 2000);
 
-    setTimeout(() => {
-      setCurrentStep("resetPassword");
+    try {
+      const response = await VerifyOTP(email, otpCode);
 
-      // Fade in with the new content
-      formOpacity.value = withTiming(1, { duration: 300 });
-      formTranslateY.value = withTiming(0, { duration: 300 });
-    }, 300);
+      if (
+        response.error ||
+        response.status === "error" ||
+        response.otpExpired ||
+        response.message?.includes("Expired") ||
+        response.message?.includes("expired") ||
+        response.message?.includes("Invalid")
+      ) {
+        const errorMessage =
+          response.message || "Invalid verification code. Please try again.";
+        showToast(errorMessage, "error", 2000);
+
+        setOtp(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+
+        if (
+          response.otpExpired ||
+          response.message?.includes("Expired") ||
+          response.message?.includes("expired")
+        ) {
+          showToast(
+            "Your verification code has expired. Please request a new one.",
+            "warning",
+            3000
+          );
+        }
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      } else {
+        console.log("set token after verification", response.authToken);
+        dispatch(setUserVerified(response.isVerified));
+
+        dispatch(setUserAccessToken(response.authToken));
+
+        dispatch(
+          setUserProfile({
+            email: response.email,
+            phoneNumber: response.mobile,
+            username: response.userName,
+            _id: response._id,
+          })
+        );
+        setOtpVerified(true);
+        showToast("Verification successful!", "success", 2000);
+
+        // fade out the form
+        formOpacity.value = withTiming(0, { duration: 300 });
+        formTranslateY.value = withTiming(10, { duration: 300 });
+
+        setTimeout(() => {
+          setCurrentStep("resetPassword");
+
+          // Fade in with the new content
+          formOpacity.value = withTiming(1, { duration: 300 });
+          formTranslateY.value = withTiming(0, { duration: 300 });
+        }, 300);
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      showToast(errorMessage, "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleResetPassword = () => {
-    if (password === confirmPassword && password !== "") {
-      console.log("Password reset successfully");
-      router.back();
+  const handleResetPassword = async () => {
+    if (!password || password.length < 8) {
+      showToast("Password must be at least 8 characters", "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showToast("Passwords do not match", "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+      return;
+    }
+
+    setIsLoading(true);
+    showToast("Resetting password...", "info", 2000);
+
+    try {
+      const response = await ResetPassqord(password);
+
+      if (response.error || response.status === "error") {
+        const errorMessage =
+          response.message || "Failed to reset password. Please try again.";
+        showToast(errorMessage, "error", 2000);
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      } else {
+        showToast("Password reset successfully!", "success", 2000);
+
+        setTimeout(() => {
+          router.push("/(auth)/LoginPage");
+        }, 1000);
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      showToast(errorMessage, "error", 2000);
+
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -231,6 +479,14 @@ export default function ForgotPasswordPage() {
 
   return (
     <PageContainer>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        duration={toast.duration}
+        onHide={hideToast}
+      />
+
       {currentStep !== "resetPassword" && (
         <TouchableOpacity
           onPress={handleBackPress}
@@ -293,6 +549,8 @@ export default function ForgotPasswordPage() {
                 placeholderTextColor={colors.font_placeholder}
                 value={email}
                 onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
             </View>
           </Animated.View>
@@ -327,8 +585,8 @@ export default function ForgotPasswordPage() {
               </Text>
             </Text>
 
-            <View style={styles.otpContainer}>
-              {[0, 1, 2, 3].map((index) => (
+            <Animated.View style={[styles.otpContainer, errorAnimatedStyle]}>
+              {[0, 1, 2, 3, 4, 5].map((index) => (
                 <TextInput
                   key={index}
                   ref={(ref) => {
@@ -340,6 +598,10 @@ export default function ForgotPasswordPage() {
                       backgroundColor: colors.bg_gray,
                       color: colors.font_dark,
                     },
+                    otp[index] === "" && {
+                      borderWidth: 1,
+                      borderColor: colors.font_placeholder,
+                    },
                   ]}
                   maxLength={1}
                   keyboardType="numeric"
@@ -349,18 +611,24 @@ export default function ForgotPasswordPage() {
                   cursorColor={colors.font_brand}
                 />
               ))}
-            </View>
+            </Animated.View>
           </Animated.View>
         )}
 
         {currentStep === "resetPassword" && (
-          <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
+          <Animated.View
+            style={[
+              styles.formContainer,
+              formAnimatedStyle,
+              errorAnimatedStyle,
+            ]}
+          >
             <TextInput
               style={[
                 styles.textInput,
                 { backgroundColor: colors.bg_gray, color: colors.font_dark },
               ]}
-              placeholder="Password"
+              placeholder="Password (min 8 characters)"
               placeholderTextColor={colors.font_placeholder}
               secureTextEntry
               value={password}
@@ -386,45 +654,93 @@ export default function ForgotPasswordPage() {
         <Animated.View style={[styles.buttonsContainer, buttonsAnimatedStyle]}>
           {currentStep === "selectMethod" && (
             <ButtonComponent
-              text="Send OTP"
+              text={isLoading ? "Sending..." : "Send OTP"}
               textColor={colors.font_brand}
               bgColor={colors.bg_light_brand}
               onPress={handleSendOTP}
+              disabled={isLoading}
+              icon={
+                isLoading
+                  ? () => (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.font_brand}
+                      />
+                    )
+                  : undefined
+              }
             />
           )}
 
           {currentStep === "verification" && (
             <>
               <ButtonComponent
-                text="Verify"
+                text={isLoading ? "Verifying..." : "Verify"}
                 textColor={colors.font_brand}
                 bgColor={colors.bg_light_brand}
                 onPress={handleVerifyOTP}
+                disabled={isLoading}
+                icon={
+                  isLoading
+                    ? () => (
+                        <ActivityIndicator
+                          size="small"
+                          color={colors.font_brand}
+                        />
+                      )
+                    : undefined
+                }
               />
 
-              <Text
-                style={[
-                  typography.bodySm,
-                  { color: colors.font_dark, textAlign: "center" },
-                ]}
-              >
-                Didn&apos;t receive it?{" "}
+              <View style={styles.resendContainer}>
                 <Text
-                  onPress={handleResendOTP}
-                  style={[typography.bodySm, { color: colors.font_brand }]}
+                  style={[
+                    typography.bodySm,
+                    { color: colors.font_dark, textAlign: "center" },
+                  ]}
                 >
-                  Resend
+                  Didn&apos;t receive it?{" "}
                 </Text>
-              </Text>
+                <TouchableOpacity
+                  onPress={isLoading ? undefined : handleResendOTP}
+                  disabled={isLoading}
+                  style={styles.resendButton}
+                >
+                  <Text
+                    style={[
+                      typography.bodySm,
+                      {
+                        color: isLoading
+                          ? colors.font_placeholder
+                          : colors.font_brand,
+                        fontWeight: "bold",
+                      },
+                    ]}
+                  >
+                    {isLoading ? "Sending..." : "Resend Code"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </>
           )}
 
           {currentStep === "resetPassword" && (
             <ButtonComponent
-              text="Reset Password"
+              text={isLoading ? "Resetting..." : "Reset Password"}
               textColor={colors.font_brand}
               bgColor={colors.bg_light_brand}
               onPress={handleResetPassword}
+              disabled={isLoading}
+              icon={
+                isLoading
+                  ? () => (
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.font_brand}
+                      />
+                    )
+                  : undefined
+              }
             />
           )}
         </Animated.View>
@@ -487,7 +803,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   otpInput: {
-    width: 50,
+    width: 40,
     height: 50,
     borderRadius: 12,
     textAlign: "center",
@@ -502,5 +818,16 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 16,
     paddingHorizontal: 16,
+  },
+  resendContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+    gap: 4,
+  },
+  resendButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
 });

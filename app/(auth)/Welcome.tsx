@@ -3,10 +3,12 @@ import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import { logout } from "@/redux/actions/userActions";
+import { store } from "@/redux/store";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, {
   Easing,
   Extrapolation,
@@ -139,6 +141,20 @@ export default function Welcome() {
             icon={require("../../assets/images/google.png")}
           /> */}
         </Animated.View>
+        {__DEV__ && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: "red",
+              padding: 10,
+              borderRadius: 5,
+            }}
+            onPress={() => {
+              store.dispatch(logout());
+            }}
+          >
+            <Text>Logout</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </PageContainer>
   );

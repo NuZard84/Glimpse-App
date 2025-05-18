@@ -1,12 +1,21 @@
 import ButtonComponent from "@/common/ButtonComponent";
 import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
+import Toast, { ToastType } from "@/common/Toast";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import {
+  setIsForgotPassword,
+  setUserAccessToken,
+  setUserProfile,
+  setUserVerified,
+} from "@/redux/actions/userActions";
+import { SignIn } from "@/services/auth";
 import { Entypo } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   StyleSheet,
@@ -24,12 +33,26 @@ import Animated, {
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { useDispatch } from "react-redux";
 
 export default function LoginPage() {
   const colors = useAppColors();
-  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const dispatch = useDispatch();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    general: "",
+  });
+  const [toast, setToast] = useState({
+    visible: false,
+    message: "",
+    type: "info" as ToastType,
+    duration: 1500,
+  });
 
   // Animation values
   const logoOpacity = useSharedValue(0);
@@ -41,6 +64,7 @@ export default function LoginPage() {
   const buttonsOpacity = useSharedValue(0);
   const buttonsTranslateY = useSharedValue(30);
   const termsOpacity = useSharedValue(0);
+  const errorShake = useSharedValue(0);
 
   // Logo animation styles
   const logoAnimatedStyle = useAnimatedStyle(() => {
@@ -73,6 +97,27 @@ export default function LoginPage() {
       transform: [{ translateY: buttonsTranslateY.value }],
     };
   });
+
+  // Error animation style
+  const errorAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: errorShake.value }],
+    };
+  });
+
+  // Handle toast hiding
+  const hideToast = () => {
+    setToast((prev) => ({ ...prev, visible: false }));
+  };
+
+  // Show toast with message and type
+  const showToast = (
+    message: string,
+    type: ToastType = "info",
+    duration: number = 1500
+  ) => {
+    setToast({ visible: true, message, type, duration });
+  };
 
   // Trigger animations on component mount
   useEffect(() => {
@@ -109,8 +154,292 @@ export default function LoginPage() {
     setShowPassword(!showPassword);
   };
 
+  const validateEmail = (email: string) => {
+    if (!email.trim()) {
+      return "Email or Username is required";
+    }
+    return "";
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) {
+      return "Password is required";
+    }
+    return "";
+  };
+
+  const validateForm = () => {
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+
+    setErrors({
+      email: emailError,
+      password: passwordError,
+      general: "",
+    });
+
+    if (emailError || passwordError) {
+      // Show toast with validation errors
+      const errorMessages = [emailError, passwordError].filter(Boolean);
+      if (errorMessages.length > 0) {
+        showToast("Failed to sign in", "error", 2000);
+      }
+
+      // Trigger error shake animation
+      errorShake.value = withSequence(
+        withTiming(-10, { duration: 100 }),
+        withTiming(10, { duration: 100 }),
+        withTiming(-10, { duration: 100 }),
+        withTiming(0, { duration: 100 })
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handleLogin = async () => {
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    showToast("Signing in...", "info", 2000);
+
+    try {
+      const response = await SignIn(email, password);
+
+      if (response.error || response.status === "error") {
+        if (
+          (typeof response.message === "string" &&
+            response.message.includes("verify your email")) ||
+          (typeof response.error === "string" &&
+            response.error.includes("verify your email"))
+        ) {
+          // verification needed
+          showToast("Please verify your email", "warning", 2000);
+          setTimeout(() => {
+            router.push({
+              pathname: "/(auth)/Verify",
+              params: { email },
+            });
+          }, 1000);
+        } else if (
+          (typeof response.message === "string" &&
+            response.message.includes("User Not Found")) ||
+          (typeof response.error === "string" &&
+            response.error.includes("User Not Found"))
+        ) {
+          // User not found
+          setErrors({
+            ...errors,
+            email: "",
+            general: "Account not found with this email/username",
+          });
+          showToast("Account not found", "error", 2000);
+
+          errorShake.value = withSequence(
+            withTiming(-10, { duration: 100 }),
+            withTiming(10, { duration: 100 }),
+            withTiming(-10, { duration: 100 }),
+            withTiming(0, { duration: 100 })
+          );
+        } else if (
+          (typeof response.message === "string" &&
+            response.message.includes("check your password")) ||
+          (typeof response.error === "string" &&
+            response.error.includes("check your password"))
+        ) {
+          // Password incorrect
+          setErrors({
+            ...errors,
+            password: "",
+            general: "Incorrect password",
+          });
+          showToast("Incorrect password", "error", 2000);
+
+          errorShake.value = withSequence(
+            withTiming(-10, { duration: 100 }),
+            withTiming(10, { duration: 100 }),
+            withTiming(-10, { duration: 100 }),
+            withTiming(0, { duration: 100 })
+          );
+        } else if (response.errors?.password) {
+          // Password validation error
+          let passwordError = response.errors.password;
+
+          if (passwordError.includes("String must contain")) {
+            passwordError = passwordError.replace("String", "Password");
+          }
+          setErrors({
+            ...errors,
+            password: passwordError,
+            general: "",
+          });
+          showToast("Please check your password", "error", 2000);
+
+          errorShake.value = withSequence(
+            withTiming(-10, { duration: 100 }),
+            withTiming(10, { duration: 100 }),
+            withTiming(-10, { duration: 100 }),
+            withTiming(0, { duration: 100 })
+          );
+        } else {
+          // Any other error
+          const errorMessage =
+            response.message ||
+            response.error ||
+            "Login failed. Please try again.";
+          setErrors({
+            ...errors,
+            email: "",
+            password: "",
+            general: errorMessage,
+          });
+          showToast("Failed to sign in", "error", 2000);
+
+          errorShake.value = withSequence(
+            withTiming(-10, { duration: 100 }),
+            withTiming(10, { duration: 100 }),
+            withTiming(-10, { duration: 100 }),
+            withTiming(0, { duration: 100 })
+          );
+        }
+      } else {
+        const userData = {
+          _id: response._id,
+          email: response.email,
+          username: response.userName,
+          phoneNumber: response.mobile,
+        };
+
+        dispatch(setUserProfile(userData));
+        dispatch(setUserVerified(response.isVerified));
+
+        // Store access token if user is verified
+        if (response.isVerified && response.authToken) {
+          dispatch(setUserAccessToken(response.authToken));
+        }
+        dispatch(setIsForgotPassword(false));
+
+        showToast("Login successful!", "success", 2000);
+
+        if (
+          !response.userName ||
+          response.userName === "" ||
+          response.userName.trim() === ""
+        ) {
+          console.log("Username is empty");
+          setTimeout(() => {
+            router.push("/(auth)/Username");
+          }, 1000);
+        } else {
+          console.log("Username is not empty");
+          router.replace("/(tabs)/Home" as any);
+        }
+      }
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      const errorResponse = error.response?.data;
+      if (
+        typeof errorMessage === "string" &&
+        errorMessage.includes("verify your email")
+      ) {
+        showToast("Please verify your email", "warning", 2000);
+        setTimeout(() => {
+          router.push({
+            pathname: "/(auth)/Verify",
+            params: { email },
+          });
+        }, 1000);
+      } else if (
+        (typeof errorMessage === "string" &&
+          errorMessage.includes("User Not Found")) ||
+        (errorResponse &&
+          typeof errorResponse.message === "string" &&
+          errorResponse.message.includes("User Not Found"))
+      ) {
+        // User not found
+        setErrors({
+          ...errors,
+          email: "",
+          general: "Account not found with this email/username",
+        });
+        showToast("Account not found", "error", 2000);
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      } else if (
+        (typeof errorMessage === "string" &&
+          errorMessage.includes("check your password")) ||
+        (errorResponse &&
+          typeof errorResponse.message === "string" &&
+          errorResponse.message.includes("check your password"))
+      ) {
+        setErrors({
+          ...errors,
+          password: "",
+          general: "Incorrect password",
+        });
+        showToast("Incorrect password", "error", 2000);
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      } else if (errorResponse && errorResponse.errors?.password) {
+        let passwordError = errorResponse.errors.password;
+
+        if (passwordError.includes("String must contain")) {
+          passwordError = passwordError.replace("String", "Password");
+        }
+        setErrors({
+          ...errors,
+          password: passwordError,
+          general: "",
+        });
+        showToast("Please check your password", "error", 2000);
+
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      } else {
+        setErrors({
+          ...errors,
+          email: "",
+          password: "",
+          general: errorMessage,
+        });
+        showToast("Failed to sign in", "error", 2000);
+
+        // Trigger error shake animation
+        errorShake.value = withSequence(
+          withTiming(-10, { duration: 100 }),
+          withTiming(10, { duration: 100 }),
+          withTiming(-10, { duration: 100 }),
+          withTiming(0, { duration: 100 })
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <PageContainer>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        duration={toast.duration}
+        onHide={hideToast}
+      />
       <ThemeToggleIcon style={styles.themeToggle} size={22} />
       <View style={styles.container}>
         <Animated.View style={[styles.headerContainer, logoAnimatedStyle]}>
@@ -139,6 +468,26 @@ export default function LoginPage() {
           </Animated.Text>
         </Animated.View>
 
+        {errors.general ? (
+          <Animated.View
+            style={[
+              styles.errorContainer,
+              errorAnimatedStyle,
+              { backgroundColor: colors.bg_error },
+            ]}
+          >
+            <Text
+              style={[
+                typography.body,
+                styles.errorText,
+                { color: colors.font_error },
+              ]}
+            >
+              {errors.general}
+            </Text>
+          </Animated.View>
+        ) : null}
+
         <Animated.View style={[styles.formContainer, formAnimatedStyle]}>
           <View style={styles.inputContainer}>
             <TextInput
@@ -148,42 +497,81 @@ export default function LoginPage() {
                   backgroundColor: colors.bg_gray,
                   color: colors.font_dark,
                 },
+                errors.email
+                  ? [styles.inputError, { borderColor: colors.font_error }]
+                  : null,
               ]}
               cursorColor={colors.font_brand}
-              placeholder="Username or Email"
+              placeholder="Email or Username"
               placeholderTextColor={colors.font_placeholder}
-              value={usernameOrEmail}
-              onChangeText={setUsernameOrEmail}
+              value={email}
+              onChangeText={(text) => {
+                setEmail(text);
+                setErrors({ ...errors, email: "", general: "" });
+              }}
+              keyboardType="default"
+              autoCapitalize="none"
             />
+            {errors.email ? (
+              <Animated.Text
+                style={[
+                  styles.fieldErrorText,
+                  errorAnimatedStyle,
+                  { color: colors.font_error },
+                ]}
+              >
+                {errors.email}
+              </Animated.Text>
+            ) : null}
           </View>
 
-          <View
-            style={[
-              styles.passwordContainer,
-              { backgroundColor: colors.bg_gray },
-            ]}
-          >
-            <TextInput
-              style={[styles.passwordInput, { color: colors.font_dark }]}
-              cursorColor={colors.font_brand}
-              placeholder="Password"
-              placeholderTextColor={colors.font_placeholder}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry={!showPassword}
-            />
-            <Pressable onPress={togglePasswordVisibility}>
-              <Entypo
-                name={showPassword ? "eye" : "eye-with-line"}
-                size={20}
-                color={colors.font_placeholder}
+          <View style={styles.inputContainer}>
+            <View
+              style={[
+                styles.passwordContainer,
+                { backgroundColor: colors.bg_gray },
+                errors.password
+                  ? [styles.inputError, { borderColor: colors.font_error }]
+                  : null,
+              ]}
+            >
+              <TextInput
+                style={[styles.passwordInput, { color: colors.font_dark }]}
+                cursorColor={colors.font_brand}
+                placeholder="Password"
+                placeholderTextColor={colors.font_placeholder}
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setErrors({ ...errors, password: "", general: "" });
+                }}
+                secureTextEntry={!showPassword}
               />
-            </Pressable>
+              <Pressable onPress={togglePasswordVisibility}>
+                <Entypo
+                  name={showPassword ? "eye" : "eye-with-line"}
+                  size={20}
+                  color={colors.font_placeholder}
+                />
+              </Pressable>
+            </View>
+            {errors.password ? (
+              <Animated.Text
+                style={[
+                  styles.fieldErrorText,
+                  errorAnimatedStyle,
+                  { color: colors.font_error },
+                ]}
+              >
+                {errors.password}
+              </Animated.Text>
+            ) : null}
           </View>
 
           <View style={styles.forgotPasswordContainer}>
             <TouchableOpacity
               onPress={() => {
+                dispatch(setIsForgotPassword(true));
                 router.push("/(auth)/ForgotPassword");
               }}
             >
@@ -201,10 +589,18 @@ export default function LoginPage() {
 
         <Animated.View style={[styles.buttonsContainer, buttonsAnimatedStyle]}>
           <ButtonComponent
-            text="Login"
+            text={isLoading ? "Signing in..." : "Login"}
             textColor={colors.font_brand}
             bgColor={colors.bg_light_brand}
-            onPress={() => {}}
+            onPress={handleLogin}
+            disabled={isLoading}
+            icon={
+              isLoading
+                ? () => (
+                    <ActivityIndicator size="small" color={colors.font_brand} />
+                  )
+                : undefined
+            }
           />
           <Text
             style={[
@@ -305,11 +701,35 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: "100%",
     position: "relative",
+    marginBottom: 8,
   },
   themeToggle: {
     position: "absolute",
     top: 40,
     right: 20,
     zIndex: 100,
+  },
+  errorText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontFamily: "CalSans",
+    paddingHorizontal: 4,
+  },
+  fieldErrorText: {
+    fontSize: 12,
+    marginTop: 4,
+    fontFamily: "CalSans",
+    paddingHorizontal: 4,
+    marginLeft: 4,
+  },
+  errorContainer: {
+    padding: 10,
+    borderRadius: 8,
+    width: "90%",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  inputError: {
+    borderWidth: 1,
   },
 });

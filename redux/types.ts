@@ -1,0 +1,8 @@
+//user reducer types
+export const SET_USER_PROFILE = "SET_USER_PROFILE";
+export const SET_USERNAME = "SET_USERNAME";
+export const SET_USER_ACCESS_TOKEN = "SET_USER_ACCESS_TOKEN";
+export const SET_USER_VERIFIED = "SET_USER_VERIFIED";
+export const SET_IS_FORGOT_PASSWORD = "SET_IS_FORGOT_PASSWORD";
+export const LOGOUT = "LOGOUT";
+

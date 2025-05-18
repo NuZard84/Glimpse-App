@@ -9,7 +9,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-type ButtonComponentProps = {
+export type ButtonComponentProps = {
   text: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
@@ -19,6 +19,8 @@ type ButtonComponentProps = {
   vectorIcon?: React.ReactNode;
   iconHeight?: number;
   iconWidth?: number;
+  disabled?: boolean;
+  icon?: () => React.ReactNode;
 };
 
 export default function ButtonComponent({
@@ -31,6 +33,8 @@ export default function ButtonComponent({
   vectorIcon,
   iconHeight = 24,
   iconWidth = 24,
+  disabled = false,
+  icon,
 }: ButtonComponentProps) {
   const themeColors = useAppColors();
   const finalTextColor = textColor || themeColors.font_dark;
@@ -39,6 +43,7 @@ export default function ButtonComponent({
   return (
     <TouchableOpacity
       onPress={onPress}
+      disabled={disabled}
       style={[
         style
           ? style
@@ -51,7 +56,11 @@ export default function ButtonComponent({
               paddingVertical: 14,
               flexDirection: "row",
             },
-        { backgroundColor: finalBgColor, gap: 8 },
+        {
+          backgroundColor: finalBgColor,
+          gap: 8,
+          opacity: disabled ? 0.7 : 1,
+        },
       ]}
     >
       {imageIcon && (
@@ -65,6 +74,7 @@ export default function ButtonComponent({
         />
       )}
       {vectorIcon && vectorIcon}
+      {icon && icon()}
       <Text style={[typography.button, { color: finalTextColor }]}>{text}</Text>
     </TouchableOpacity>
   );
