@@ -17,7 +17,12 @@ export default function Home() {
     >
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.font_dark }]}>Home</Text>
-        <Text style={[styles.subtitle, { color: colors.font_dark }]}>
+        <Text
+          style={[
+            styles.subtitle,
+            { color: colors.font_dark, marginBottom: 20 },
+          ]}
+        >
           Welcome to Glimpse! {user.profile.username}
         </Text>
         <ButtonComponent
