@@ -1,5 +1,5 @@
+import AuthPageContainer from "@/common/AuthPageContainer";
 import ButtonComponent from "@/common/ButtonComponent";
-import PageContainer from "@/common/PageContainer";
 import Toast, { ToastType } from "@/common/Toast";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
@@ -216,7 +216,7 @@ export default function UsernamePage() {
   };
 
   return (
-    <PageContainer>
+    <AuthPageContainer>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -313,7 +313,7 @@ export default function UsernamePage() {
           />
         </Animated.View>
       </View>
-    </PageContainer>
+    </AuthPageContainer>
   );
 }
 

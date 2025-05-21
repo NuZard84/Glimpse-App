@@ -1,6 +1,7 @@
 import { useRouter, useSegments } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { AppState } from 'react-native';
 
 interface AuthState {
     isAuthenticated: boolean;
@@ -25,6 +26,8 @@ const useSessionManager = () => {
     const lastAuthState = useRef<AuthState | null>(null);
     const lastDestination = useRef<NavigationPath | null>(null);
     const navigationLock = useRef(false);
+    const navigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const appState = useRef(AppState.currentState);
 
     // Reset navigation state when auth state changes significantly
     // This ensures logout will trigger a new navigation
@@ -49,16 +52,37 @@ const useSessionManager = () => {
         inTabsGroup: segments[0] === '(tabs)',
     }), [user?.accessToken, user?.isVarified, user?.profile?.username, user?.isForgotPassword, segments]);
 
-    // First effect - mark component as mounted
+    // First effect - mark component as mounted and handle app state changes
     useEffect(() => {
         isMounted.current = true;
+        
+        // Listen for app state changes to handle resuming from background
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+                // App has come to the foreground, reset navigation lock if it was stuck
+                navigationLock.current = false;
+            }
+            appState.current = nextAppState;
+        });
+        
         return () => {
             isMounted.current = false;
+            subscription.remove();
+            // Clear any pending navigation timers
+            if (navigationTimer.current) {
+                clearTimeout(navigationTimer.current);
+            }
         };
     }, []);
 
-    // Navigation handler
+    // Navigation handler with improved locking mechanism
     const performNavigation = useCallback(() => {
+        // Clear any existing navigation timer
+        if (navigationTimer.current) {
+            clearTimeout(navigationTimer.current);
+            navigationTimer.current = null;
+        }
+        
         if (!isMounted.current || navigationLock.current) return;
 
         // Lock navigation to prevent multiple calls
@@ -76,33 +100,50 @@ const useSessionManager = () => {
                 router.replace(destination);
             } else {
                 console.log("Already redirecting to Welcome, skipping duplicate navigation");
+                // Still need to update state even if skipping navigation
+                navigationComplete.current = true;
+                setIsNavigating(false);
+                setIsInitialized(true);
+                navigationTimer.current = setTimeout(() => {
+                    navigationLock.current = false;
+                    navigationTimer.current = null;
+                }, 800);
+                return;
             }
             navigationComplete.current = true;
             setIsNavigating(false);
             setIsInitialized(true);
-            setTimeout(() => {
+            navigationTimer.current = setTimeout(() => {
                 navigationLock.current = false;
-            }, 500);
+                navigationTimer.current = null;
+            }, 800);
             return;
         }
 
         // Only navigate if needed for authenticated users
         let destination: NavigationPath | null = null;
+        let shouldNavigate = false;
 
         if (isAuthenticated && isVerified && hasUsername && !isForgotPassword && !inTabsGroup) {
             destination = '/(tabs)/Home';
-            console.log("Redirecting to Home");
-            router.replace(destination);
+            shouldNavigate = true;
         } else if (isAuthenticated && isVerified && !hasUsername && segments[1] !== 'Username') {
             destination = '/(auth)/Username';
-            router.replace(destination);
+            shouldNavigate = true;
         } else if (isAuthenticated && !isVerified && segments[1] !== 'Verify') {
             destination = '/(auth)/Verify';
-            router.replace(destination);
+            shouldNavigate = true;
         }
 
-        if (destination) {
-            lastDestination.current = destination;
+        if (destination && shouldNavigate) {
+            // Only navigate if destination changed
+            if (lastDestination.current !== destination) {
+                console.log(`Redirecting to ${destination.split('/').pop()}`);
+                lastDestination.current = destination;
+                router.replace(destination);
+            } else {
+                console.log(`Already navigating to ${destination.split('/').pop()}, skipping duplicate`);
+            }
         }
 
         navigationComplete.current = true;
@@ -110,12 +151,13 @@ const useSessionManager = () => {
         setIsInitialized(true);
 
         // Release navigation lock after a delay
-        setTimeout(() => {
+        navigationTimer.current = setTimeout(() => {
             navigationLock.current = false;
-        }, 500);
+            navigationTimer.current = null;
+        }, 800);
     }, [authState, router, segments]);
 
-    // Handle navigation
+    // Handle navigation with debounce
     useEffect(() => {
         // Skip if not mounted, no user data, or already initialized (unless auth state changed)
         if (!isMounted.current || user === undefined) return;
@@ -131,12 +173,19 @@ const useSessionManager = () => {
 
             setIsNavigating(true);
 
-            // Delay navigation to ensure layout is mounted
-            setTimeout(() => {
+            // Clear any existing navigation timer
+            if (navigationTimer.current) {
+                clearTimeout(navigationTimer.current);
+                navigationTimer.current = null;
+            }
+
+            // Debounce navigation to prevent rapid consecutive navigations
+            navigationTimer.current = setTimeout(() => {
                 if (isMounted.current) {
                     performNavigation();
                 }
-            }, 100);
+                navigationTimer.current = null;
+            }, 200);
         }
     }, [authState, user, isInitialized, performNavigation]);
 

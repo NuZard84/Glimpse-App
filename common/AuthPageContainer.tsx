@@ -2,17 +2,17 @@ import { useAppColors } from "@/constants/Colors";
 import { StyleProp, ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type PageContainerProps = {
+type AuthPageContainerProps = {
   children: React.ReactNode;
   customStyle?: StyleProp<ViewStyle>;
   isCenter?: boolean;
 };
 
-export default function PageContainer({
+export default function AuthPageContainer({
   children,
   customStyle,
   isCenter = true,
-}: PageContainerProps) {
+}: AuthPageContainerProps) {
   const colors = useAppColors();
 
   return (
@@ -22,8 +22,9 @@ export default function PageContainer({
         customStyle
           ? customStyle
           : {
-              flex: 1,
               paddingHorizontal: 16,
+              paddingVertical: 32,
+              flex: 1,
             },
         isCenter ? { alignItems: "center", justifyContent: "center" } : {},
       ]}

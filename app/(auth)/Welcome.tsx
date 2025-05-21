@@ -1,5 +1,5 @@
+import AuthPageContainer from "@/common/AuthPageContainer";
 import ButtonComponent from "@/common/ButtonComponent";
-import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
@@ -96,7 +96,7 @@ export default function Welcome() {
   }, []);
 
   return (
-    <PageContainer>
+    <AuthPageContainer>
       <ThemeToggleIcon style={styles.themeToggle} size={22} />
       <View style={styles.container}>
         <View style={styles.welcomeCotainer}>
@@ -156,7 +156,7 @@ export default function Welcome() {
           </TouchableOpacity>
         )}
       </View>
-    </PageContainer>
+    </AuthPageContainer>
   );
 }
 

@@ -46,8 +46,9 @@ function AppLayout() {
         // AND user state is initialized (which includes navigation setup)
         if ((fontsLoaded || error) && isInitialized) {
           console.log("Hiding splash screen");
-          // Delay slightly to ensure navigation is complete
-          await new Promise((resolve) => setTimeout(resolve, 500));
+          // Use a longer delay to ensure navigation is fully complete
+          // This helps prevent the flickering issue during auth transitions
+          await new Promise((resolve) => setTimeout(resolve, 800));
           await SplashScreen.hideAsync();
           setAppReady(true);
         }
@@ -64,6 +65,7 @@ function AppLayout() {
     return (
       <>
         <Slot />
+        {/* Only show loading indicator when navigating and fonts are loaded */}
         {isNavigating && fontsLoaded && (
           <View style={styles.overlay}>
             <ActivityIndicator size="large" color={colors.font_brand} />
@@ -82,9 +84,9 @@ function AppLayout() {
             headerShown: true,
             contentStyle: { backgroundColor: colors.bg_offwhite },
             headerStyle: { backgroundColor: colors.bg_offwhite },
-            animation: "fade_from_bottom",
+            animation: "fade",
             animationDuration: 300,
-            presentation: "transparentModal",
+            presentation: "card",
           }}
         >
           <Stack.Screen

@@ -1,5 +1,5 @@
+import AuthPageContainer from "@/common/AuthPageContainer";
 import ButtonComponent from "@/common/ButtonComponent";
-import PageContainer from "@/common/PageContainer";
 import ThemeToggleIcon from "@/common/ThemeToggleIcon";
 import Toast, { ToastType } from "@/common/Toast";
 import { useAppColors } from "@/constants/Colors";
@@ -432,7 +432,7 @@ export default function LoginPage() {
   };
 
   return (
-    <PageContainer>
+    <AuthPageContainer>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -621,7 +621,7 @@ export default function LoginPage() {
           </Text>
         </Animated.View>
       </View>
-    </PageContainer>
+    </AuthPageContainer>
   );
 }
 

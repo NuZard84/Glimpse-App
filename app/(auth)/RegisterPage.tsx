@@ -1,3 +1,4 @@
+import AuthPageContainer from "@/common/AuthPageContainer";
 import ButtonComponent from "@/common/ButtonComponent";
 import CountryCodeSelector from "@/common/CountryCodeSelector";
 import PageContainer from "@/common/PageContainer";
@@ -316,7 +317,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <PageContainer>
+    <AuthPageContainer>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -555,7 +556,7 @@ export default function RegisterPage() {
           </Text>
         </Animated.View>
       </View>
-    </PageContainer>
+    </AuthPageContainer>
   );
 }
 
