@@ -147,6 +147,7 @@ export default function Profile() {
     <PageContainer
       isCenter={false}
       edges={["right", "bottom", "left"]} // Exclude top edge as it's handled by the header
+      withPadding={false}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}

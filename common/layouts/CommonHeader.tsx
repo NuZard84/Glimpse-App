@@ -11,7 +11,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 type CommonHeaderProps = {
   title: string;
@@ -27,6 +30,7 @@ export default function CommonHeader({
   blurred = false,
 }: CommonHeaderProps) {
   const colors = useAppColors();
+  const insets = useSafeAreaInsets();
 
   if (blurred) {
     if (Platform.OS === "android") {
@@ -34,7 +38,7 @@ export default function CommonHeader({
         <SafeAreaView
           style={[
             styles.headerContainer,
-            { backgroundColor: hexToRgba(colors.bg_offwhite, 0.7) },
+            { backgroundColor: hexToRgba(colors.font_dark, 0.85) },
           ]}
         >
           <View style={styles.headerContent}>
@@ -111,79 +115,19 @@ export default function CommonHeader({
       );
     }
 
-    // iOS implementation with BlurView - fixed positioning
+    // iOS implementation with BlurView - fixed to extend under notch
     return (
-      <SafeAreaView
-        style={[styles.headerContainer, { backgroundColor: "transparent" }]}
-      >
-        <BlurView intensity={75} tint="dark" style={styles.headerContent}>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              display: "flex",
-              justifyContent: "space-between",
-            }}
-          >
-            {isBackButton ? (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 30,
-                  height: 30,
-                  borderRadius: 30 / 2,
-                  backgroundColor: hexToRgba(colors.bg_offwhite, 0.8),
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="chevron-left"
-                  size={20}
-                  color={colors.font_dark}
-                />
-              </TouchableOpacity>
-            ) : (
-              <View style={{ width: 30 }} />
-            )}
-            <View
-              style={{
-                borderRadius: 100,
-                paddingHorizontal: 20,
-                paddingVertical: 4,
-                backgroundColor: hexToRgba(colors.bg_offwhite, 0.8),
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="account-circle-outline"
-                size={20}
-                color={colors.font_dark}
-              />
-              <Text
-                style={{
-                  ...typography.bodySm,
-                  color: colors.font_dark,
-                }}
-              >
-                {title}
-              </Text>
-            </View>
-            {isRightButton ? (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: 4,
-                }}
-              >
+      <View style={[styles.headerContainer, { height: insets.top + 60 }]}>
+        <BlurView
+          intensity={75}
+          tint="dark"
+          style={[StyleSheet.absoluteFillObject]}
+        >
+          <SafeAreaView style={{ flex: 1 }}>
+            <View style={styles.headerContent}>
+              {isBackButton ? (
                 <TouchableOpacity
+                  onPress={() => router.back()}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -191,40 +135,97 @@ export default function CommonHeader({
                     width: 30,
                     height: 30,
                     borderRadius: 30 / 2,
-                    backgroundColor: hexToRgba(colors.bg_offwhite, 0.3),
-                  }}
-                >
-                  <MaterialIcons
-                    name="person-add-alt"
-                    size={20}
-                    color={colors.font_dark}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push("/(tabs)/Profile")}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: 30,
-                    height: 30,
-                    borderRadius: 30 / 2,
-                    backgroundColor: hexToRgba(colors.bg_offwhite, 0.3),
+                    backgroundColor: hexToRgba(colors.bg_offwhite, 0.8),
                   }}
                 >
                   <MaterialCommunityIcons
-                    name="account-circle-outline"
+                    name="chevron-left"
                     size={20}
                     color={colors.font_dark}
                   />
                 </TouchableOpacity>
+              ) : (
+                <View style={{ width: 30 }} />
+              )}
+              <View
+                style={{
+                  borderRadius: 100,
+                  paddingHorizontal: 20,
+                  paddingVertical: 4,
+                  backgroundColor: hexToRgba(colors.bg_offwhite, 0.8),
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="account-circle-outline"
+                  size={20}
+                  color={colors.font_dark}
+                />
+                <Text
+                  style={{
+                    ...typography.bodySm,
+                    color: colors.font_dark,
+                  }}
+                >
+                  {title}
+                </Text>
               </View>
-            ) : (
-              <View style={{ width: 32 }} />
-            )}
-          </View>
+              {isRightButton ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: 4,
+                  }}
+                >
+                  <TouchableOpacity
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 30,
+                      height: 30,
+                      borderRadius: 30 / 2,
+                      backgroundColor: hexToRgba(colors.bg_offwhite, 0.3),
+                    }}
+                  >
+                    <MaterialIcons
+                      name="person-add-alt"
+                      size={20}
+                      color={colors.font_dark}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(tabs)/Profile")}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 30,
+                      height: 30,
+                      borderRadius: 30 / 2,
+                      backgroundColor: hexToRgba(colors.bg_offwhite, 0.3),
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="account-circle-outline"
+                      size={20}
+                      color={colors.font_dark}
+                    />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={{ width: 32 }} />
+              )}
+            </View>
+          </SafeAreaView>
         </BlurView>
-      </SafeAreaView>
+      </View>
     );
   }
 
