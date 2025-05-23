@@ -139,7 +139,9 @@ export default function Profile() {
 
   // Calculate header height based on platform and insets
   const headerHeight =
-    Platform.OS === "ios" ? insets.top + 60 : statusBarHeight + 60;
+    Platform.OS === "ios"
+      ? insets.top + 70 // Increased for iOS to account for the header
+      : statusBarHeight + 60;
 
   return (
     <PageContainer
@@ -151,11 +153,9 @@ export default function Profile() {
         contentContainerStyle={{
           paddingTop: headerHeight,
           paddingHorizontal: 16,
+          paddingBottom: 40, // Add bottom padding for better scrolling experience
         }}
-        style={[
-          styles.container,
-          { marginTop: Platform.OS === "android" ? 0 : 0 },
-        ]}
+        style={styles.container}
       >
         {/* Profile Info */}
         <View style={styles.profileInfo}>

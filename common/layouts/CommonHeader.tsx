@@ -34,7 +34,7 @@ export default function CommonHeader({
         <SafeAreaView
           style={[
             styles.headerContainer,
-            { backgroundColor: hexToRgba(colors.bg_offwhite, 0.85) },
+            { backgroundColor: hexToRgba(colors.bg_offwhite, 0.7) },
           ]}
         >
           <View style={styles.headerContent}>
@@ -111,29 +111,12 @@ export default function CommonHeader({
       );
     }
 
-    // iOS implementation with BlurView
+    // iOS implementation with BlurView - fixed positioning
     return (
       <SafeAreaView
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-          overflow: "hidden",
-          backgroundColor: "transparent",
-        }}
+        style={[styles.headerContainer, { backgroundColor: "transparent" }]}
       >
-        <BlurView
-          intensity={75}
-          tint="dark"
-          style={{
-            width: "100%",
-            padding: 16,
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
+        <BlurView intensity={75} tint="dark" style={styles.headerContent}>
           <View
             style={{
               flexDirection: "row",
