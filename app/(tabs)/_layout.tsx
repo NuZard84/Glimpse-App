@@ -16,10 +16,8 @@ export default function TabsLayout() {
         initialRouteName={screenNames.HOME}
         screenOptions={{
           contentStyle: { backgroundColor: colors.bg_offwhite },
-          headerStyle: {
-            backgroundColor: "transparent",
-          },
-          animation: "fade_from_bottom",
+
+          animation: "fade",
           animationDuration: 300,
           presentation: "transparentModal",
           headerShown: false,
@@ -30,12 +28,25 @@ export default function TabsLayout() {
           options={{
             header: () => (
               <CommonHeader
-                title={user?.profile?.username || "Camera"}
+                title={user?.profile?.username || "User"}
                 isBackButton={false}
               />
             ),
             headerShown: true,
-            headerTransparent: true,
+          }}
+        />
+
+        <Stack.Screen
+          name={screenNames.PROFILE}
+          options={{
+            header: () => (
+              <CommonHeader
+                title="Profile"
+                isRightButton={false}
+                blurred={true} // Use blurred instead of transparent
+              />
+            ),
+            headerShown: true,
           }}
         />
       </Stack>

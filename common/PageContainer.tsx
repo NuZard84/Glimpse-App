@@ -1,6 +1,5 @@
 import { useAppColors } from "@/constants/Colors";
-import { StyleProp, ViewStyle } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleProp, View, ViewStyle } from "react-native";
 
 type PageContainerProps = {
   children: React.ReactNode;
@@ -16,7 +15,7 @@ export default function PageContainer({
   const colors = useAppColors();
 
   return (
-    <SafeAreaView
+    <View
       style={[
         { position: "relative", backgroundColor: colors.bg_offwhite },
         customStyle
@@ -29,6 +28,6 @@ export default function PageContainer({
       ]}
     >
       {children}
-    </SafeAreaView>
+    </View>
   );
 }

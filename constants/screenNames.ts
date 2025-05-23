@@ -8,5 +8,6 @@ export const screenNames = {
     FORGOT_PASSWORD: "ForgotPassword",
     GET_USERNAME: "Username",
     HOME: "Home",
+    PROFILE: "Profile",
 };
 
