@@ -136,7 +136,11 @@ export default function Profile() {
   const colors = useAppColors();
 
   return (
-    <HeaderPageContainer isScrollable={true} withPadding={true}>
+    <HeaderPageContainer
+      isScrollable={true}
+      withPadding={true}
+      hasHeader={true}
+    >
       {/* Profile Info */}
       <View style={styles.profileInfo}>
         <Animated.View

@@ -10,7 +10,12 @@ export default function Home() {
   const user = useSelector((state: { user: UserState }) => state.user);
 
   return (
-    <HeaderPageContainer isCenter={true}>
+    <HeaderPageContainer
+      isCenter={true}
+      hasHeader={true}
+      isScrollable={false}
+      withPadding={false}
+    >
       <View>
         <Text
           style={[

@@ -20,6 +20,7 @@ type HeaderPageContainerProps = {
   withPadding?: boolean;
   extraPaddingTop?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  hasHeader?: boolean; // Add this prop
 };
 
 export default function HeaderPageContainer({
@@ -30,20 +31,26 @@ export default function HeaderPageContainer({
   withPadding = true,
   extraPaddingTop = 0,
   contentContainerStyle,
+  hasHeader = false, // Default to false
 }: HeaderPageContainerProps) {
   const colors = useAppColors();
   const insets = useSafeAreaInsets();
   const statusBarHeight = StatusBar.currentHeight || 0;
 
   // Calculate header height based on platform and insets
-  const headerHeight =
-    Platform.OS === "ios"
+  const headerHeight = hasHeader
+    ? Platform.OS === "ios"
       ? insets.top + 70 + extraPaddingTop
-      : statusBarHeight + 60 + extraPaddingTop;
+      : statusBarHeight + 60 + extraPaddingTop
+    : extraPaddingTop; // Only use extraPaddingTop if no header
 
   return (
     <SafeAreaView
-      edges={["right", "bottom", "left"]} // Exclude top edge as it's handled by the header
+      edges={
+        hasHeader
+          ? ["right", "bottom", "left"]
+          : ["top", "right", "bottom", "left"]
+      } // Exclude top edge only when header is present
       style={[
         {
           position: "relative",
