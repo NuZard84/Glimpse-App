@@ -30,6 +30,7 @@ export default function TabsLayout() {
               <CommonHeader
                 title={user?.profile?.username || "User"}
                 isBackButton={false}
+                blurred={true}
               />
             ),
             headerShown: true,
@@ -43,7 +44,7 @@ export default function TabsLayout() {
               <CommonHeader
                 title="Profile"
                 isRightButton={false}
-                blurred={true} // Use blurred instead of transparent
+                blurred={true}
               />
             ),
             headerShown: true,

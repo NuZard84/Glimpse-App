@@ -25,7 +25,8 @@ export default function CommonHeader({
   if (blurred) {
     return (
       <BlurView
-        intensity={80} // Adjust blur intensity (0-100)
+        intensity={75}
+        tint="dark"
         style={{
           position: "absolute",
           top: 0,
@@ -62,7 +63,7 @@ export default function CommonHeader({
                   width: 30,
                   height: 30,
                   borderRadius: 30 / 2,
-                  backgroundColor: hexToRgba(colors.bg_offwhite, 0.3),
+                  backgroundColor: hexToRgba(colors.bg_offwhite, 0.8),
                 }}
               >
                 <MaterialCommunityIcons
@@ -76,10 +77,10 @@ export default function CommonHeader({
             )}
             <View
               style={{
-                borderRadius: 32,
+                borderRadius: 100,
                 paddingHorizontal: 20,
                 paddingVertical: 4,
-                backgroundColor: hexToRgba(colors.bg_offwhite, 0.3),
+                backgroundColor: hexToRgba(colors.bg_offwhite, 0.8),
                 display: "flex",
                 flexDirection: "row",
                 alignItems: "center",

@@ -134,7 +134,7 @@ export default function Profile() {
     <PageContainer isCenter={false}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        // contentContainerStyle={{ paddingTop: 80 }}
+        contentContainerStyle={{ paddingTop: 90 }}
         style={styles.container}
       >
         {/* Profile Info */}
