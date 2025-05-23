@@ -4,12 +4,16 @@ import { typography } from "@/constants/styles";
 import { FontAwesome5 } from "@expo/vector-icons";
 import {
   Image,
+  Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -129,13 +133,29 @@ const MenuSection = ({ title, items, colors }: MenuSectionProps) => {
 
 export default function Profile() {
   const colors = useAppColors();
+  const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
+  const statusBarHeight = StatusBar.currentHeight || 0;
+
+  // Calculate header height based on platform and insets
+  const headerHeight =
+    Platform.OS === "ios" ? insets.top + 60 : statusBarHeight + 60;
 
   return (
-    <PageContainer isCenter={false}>
+    <PageContainer
+      isCenter={false}
+      edges={["right", "bottom", "left"]} // Exclude top edge as it's handled by the header
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: 90 }}
-        style={styles.container}
+        contentContainerStyle={{
+          paddingTop: headerHeight,
+          paddingHorizontal: 16,
+        }}
+        style={[
+          styles.container,
+          { marginTop: Platform.OS === "android" ? 0 : 0 },
+        ]}
       >
         {/* Profile Info */}
         <View style={styles.profileInfo}>
