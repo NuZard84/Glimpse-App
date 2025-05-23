@@ -38,7 +38,7 @@ export default function CommonHeader({
         <SafeAreaView
           style={[
             styles.headerContainer,
-            { backgroundColor: hexToRgba(colors.font_dark, 0.85) },
+            { backgroundColor: hexToRgba(colors.bg_offwhite, 0.85) },
           ]}
         >
           <View style={styles.headerContent}>

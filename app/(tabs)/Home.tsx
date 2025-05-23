@@ -1,4 +1,4 @@
-import PageContainer from "@/common/PageContainer";
+import HeaderPageContainer from "@/common/HeaderPageContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { UserState } from "@/redux/reducers/userReducer";
@@ -10,7 +10,7 @@ export default function Home() {
   const user = useSelector((state: { user: UserState }) => state.user);
 
   return (
-    <PageContainer>
+    <HeaderPageContainer isCenter={true}>
       <View>
         <Text
           style={[
@@ -23,6 +23,6 @@ export default function Home() {
           Hello, {user?.profile.username}
         </Text>
       </View>
-    </PageContainer>
+    </HeaderPageContainer>
   );
 }

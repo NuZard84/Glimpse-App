@@ -1,19 +1,10 @@
-import PageContainer from "@/common/PageContainer";
+import HeaderPageContainer from "@/common/HeaderPageContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import { logout } from "@/redux/actions/userActions";
+import { store } from "@/redux/store";
 import { FontAwesome5 } from "@expo/vector-icons";
-import {
-  Image,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -22,6 +13,7 @@ type MenuItem = {
   id: string;
   title: string;
   icon: string;
+  onPress?: () => void;
 };
 
 // Menu items for the General section
@@ -49,8 +41,17 @@ const aboutMenuItems: MenuItem[] = [
 //Accounts Menu Items
 const accountsMenuItems: MenuItem[] = [
   { id: "1", title: "Delete Account", icon: "trash" }, // Changed from "delete-empty"
-  { id: "2", title: "Sign out", icon: "sign-out-alt" }, // Changed from "logout"
+  {
+    id: "2",
+    title: "Sign out",
+    icon: "sign-out-alt",
+    onPress: () => {
+      store.dispatch(logout());
+      console.log("sign out");
+    },
+  }, // Changed from "logout"
 ];
+
 // Define types for component props
 type MenuItemProps = {
   item: MenuItem;
@@ -61,7 +62,7 @@ type MenuItemProps = {
 // Menu Item Component
 const MenuItem = ({ item, index, colors }: MenuItemProps) => {
   return (
-    <TouchableOpacity onPress={() => {}}>
+    <TouchableOpacity onPress={item.onPress || (() => {})}>
       <Animated.View
         entering={FadeInDown.delay(100 * index).springify()}
         style={styles.menuItem}
@@ -133,83 +134,53 @@ const MenuSection = ({ title, items, colors }: MenuSectionProps) => {
 
 export default function Profile() {
   const colors = useAppColors();
-  const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
-  const statusBarHeight = StatusBar.currentHeight || 0;
-
-  // Calculate header height based on platform and insets
-  const headerHeight =
-    Platform.OS === "ios"
-      ? insets.top + 70 // Increased for iOS to account for the header
-      : statusBarHeight + 60;
 
   return (
-    <PageContainer
-      isCenter={false}
-      edges={["right", "bottom", "left"]} // Exclude top edge as it's handled by the header
-      withPadding={false}
-    >
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingTop: headerHeight,
-          paddingHorizontal: 16,
-          paddingBottom: 40, // Add bottom padding for better scrolling experience
-        }}
-        style={styles.container}
-      >
-        {/* Profile Info */}
-        <View style={styles.profileInfo}>
-          <Animated.View
-            entering={FadeInDown.springify()}
-            style={styles.avatarContainer}
-          >
-            <Image
-              source={require("@/assets/images/logo.png")}
-              style={styles.avatar}
-            />
-          </Animated.View>
-          <Animated.Text
-            entering={FadeInDown.delay(100).springify()}
-            style={[typography.h1, { color: colors.font_dark, marginTop: 12 }]}
-          >
-            Nishchit Malasana
-          </Animated.Text>
-          <Animated.View
-            entering={FadeInDown.delay(200).springify()}
-            style={[
-              styles.friendsContainer,
-              { backgroundColor: colors.bg_gray },
-            ]}
-          >
-            <FontAwesome5
-              name="user-friends"
-              size={16}
-              color={colors.font_dark}
-            />
-            <Text style={[typography.bodySm, { color: colors.font_dark }]}>
-              friends 18
-            </Text>
-          </Animated.View>
-        </View>
+    <HeaderPageContainer isScrollable={true} withPadding={true}>
+      {/* Profile Info */}
+      <View style={styles.profileInfo}>
+        <Animated.View
+          entering={FadeInDown.springify()}
+          style={styles.avatarContainer}
+        >
+          <Image
+            source={require("@/assets/images/logo.png")}
+            style={styles.avatar}
+          />
+        </Animated.View>
+        <Animated.Text
+          entering={FadeInDown.delay(100).springify()}
+          style={[typography.h1, { color: colors.font_dark, marginTop: 12 }]}
+        >
+          Nishchit Malasana
+        </Animated.Text>
+        <Animated.View
+          entering={FadeInDown.delay(200).springify()}
+          style={[styles.friendsContainer, { backgroundColor: colors.bg_gray }]}
+        >
+          <FontAwesome5
+            name="user-friends"
+            size={16}
+            color={colors.font_dark}
+          />
+          <Text style={[typography.bodySm, { color: colors.font_dark }]}>
+            friends 18
+          </Text>
+        </Animated.View>
+      </View>
 
-        {/* General Menu */}
-        <MenuSection title="General" items={generalMenuItems} colors={colors} />
+      {/* General Menu */}
+      <MenuSection title="General" items={generalMenuItems} colors={colors} />
 
-        {/* About us Menu */}
-        <MenuSection title="About us" items={aboutMenuItems} colors={colors} />
+      {/* About us Menu */}
+      <MenuSection title="About us" items={aboutMenuItems} colors={colors} />
 
-        {/* Accounts Menu */}
-        <MenuSection
-          title="Accounts"
-          items={accountsMenuItems}
-          colors={colors}
-        />
+      {/* Accounts Menu */}
+      <MenuSection title="Accounts" items={accountsMenuItems} colors={colors} />
 
-        {/* Spacing at the bottom */}
-        <View style={{ height: 40 }} />
-      </ScrollView>
-    </PageContainer>
+      {/* Spacing at the bottom */}
+      <View style={{ height: 40 }} />
+    </HeaderPageContainer>
   );
 }
 
