@@ -1,4 +1,4 @@
-import HeaderPageContainer from "@/common/HeaderPageContainer";
+import HeaderContainer from "@/common/layouts/HeaderContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { logout } from "@/redux/actions/userActions";
@@ -40,7 +40,7 @@ const aboutMenuItems: MenuItem[] = [
 
 //Accounts Menu Items
 const accountsMenuItems: MenuItem[] = [
-  { id: "1", title: "Delete Account", icon: "trash" }, // Changed from "delete-empty"
+  { id: "1", title: "Delete Account", icon: "trash" },
   {
     id: "2",
     title: "Sign out",
@@ -49,7 +49,7 @@ const accountsMenuItems: MenuItem[] = [
       store.dispatch(logout());
       console.log("sign out");
     },
-  }, // Changed from "logout"
+  },
 ];
 
 // Define types for component props
@@ -136,7 +136,15 @@ export default function Profile() {
   const colors = useAppColors();
 
   return (
-    <HeaderPageContainer isScrollable={true} withPadding={true}>
+    <HeaderContainer
+      isScrollable={true}
+      withPadding={true}
+      headerProps={{
+        title: "Profile",
+        showBackButton: true,
+        showRightButtons: false,
+      }}
+    >
       {/* Profile Info */}
       <View style={styles.profileInfo}>
         <Animated.View
@@ -180,7 +188,7 @@ export default function Profile() {
 
       {/* Spacing at the bottom */}
       <View style={{ height: 40 }} />
-    </HeaderPageContainer>
+    </HeaderContainer>
   );
 }
 

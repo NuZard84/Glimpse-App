@@ -1,4 +1,3 @@
-import CommonHeader from "@/common/layouts/CommonHeader";
 import { screenNames } from "@/constants/screenNames";
 import { useTheme } from "@/context/ThemeContext";
 import { UserState } from "@/redux/reducers/userReducer";
@@ -20,35 +19,20 @@ export default function TabsLayout() {
             contentStyle: { backgroundColor: colors.bg_offwhite },
             animation: "fade",
             animationDuration: 300,
-
             headerShown: false,
           }}
         >
           <Stack.Screen
             name={screenNames.HOME}
             options={{
-              header: () => (
-                <CommonHeader
-                  title={user?.profile?.username || "User"}
-                  isBackButton={false}
-                  blurred={true}
-                />
-              ),
-              headerShown: true,
+              headerShown: false,
             }}
           />
 
           <Stack.Screen
             name={screenNames.PROFILE}
             options={{
-              header: () => (
-                <CommonHeader
-                  title="Profile"
-                  isRightButton={false}
-                  blurred={true}
-                />
-              ),
-              headerShown: true,
+              headerShown: false,
             }}
           />
         </Stack>

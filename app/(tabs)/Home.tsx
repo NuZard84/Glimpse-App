@@ -1,4 +1,4 @@
-import HeaderPageContainer from "@/common/HeaderPageContainer";
+import HeaderContainer from "@/common/layouts/HeaderContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { UserState } from "@/redux/reducers/userReducer";
@@ -8,9 +8,17 @@ import { useSelector } from "react-redux";
 export default function Home() {
   const colors = useAppColors();
   const user = useSelector((state: { user: UserState }) => state.user);
+  const username = user?.profile?.username || "User";
 
   return (
-    <HeaderPageContainer isCenter={true}>
+    <HeaderContainer
+      isCenter={true}
+      headerProps={{
+        title: username,
+        showBackButton: false,
+        showRightButtons: true,
+      }}
+    >
       <View>
         <Text
           style={[
@@ -20,9 +28,9 @@ export default function Home() {
             typography.body,
           ]}
         >
-          Hello, {user?.profile.username}
+          Hello, {username}
         </Text>
       </View>
-    </HeaderPageContainer>
+    </HeaderContainer>
   );
 }
