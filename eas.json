@@ -6,10 +6,6 @@
     "preview": {
       "developmentClient": false,
       "distribution": "internal"
-    },
-    "production": {
-      "developmentClient": false,
-      "distribution": "app-store"
     }
   }
 }

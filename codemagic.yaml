@@ -1,6 +1,6 @@
 workflows:
   expo-ios:
-    name: Expo iOS Build
+    name: Expo iOS Preview Build
     environment:
       vars:
         EXPO_TOKEN: $EXPO_TOKEN
