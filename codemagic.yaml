@@ -2,15 +2,31 @@ workflows:
   expo-ios:
     name: Expo iOS Preview Build
     environment:
-      vars:
-        EXPO_TOKEN: $EXPO_TOKEN
+      groups:
+        - expo # Make sure you have a group named 'expo' with EXPO_TOKEN
       node: 18
     scripts:
-      - npm install -g expo-cli eas-cli
-      - npm install
-      - eas build --platform ios --non-interactive --profile preview
+      - name: Install dependencies
+        script: |
+          npm install -g @expo/cli eas-cli
+          npm install
+      - name: Debug Expo auth
+        script: |
+          npx expo whoami
+          npx eas whoami
+      - name: Authenticate with Expo
+        script: |
+          echo $EXPO_TOKEN | npx expo login --non-interactive
+      - name: Debug Expo auth
+        script: |
+          npx expo whoami
+          npx eas whoami
+      - name: Build iOS app
+        script: |
+          eas build --platform ios --non-interactive --profile preview
     artifacts:
-      - build/**/*
+      - "*.ipa"
+      - "*.app"
     publishing:
       email:
         recipients:
