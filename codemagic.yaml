@@ -10,14 +10,14 @@ workflows:
         script: |
           npm install -g @expo/cli eas-cli
           npm install
-      - name: Debug Expo auth
+      - name: Debug Expo auth (before login)
         script: |
-          npx expo whoami
-          npx eas whoami
+          npx expo whoami || echo "Not logged in yet"
+          npx eas whoami || echo "Not logged in to EAS yet"
       - name: Authenticate with Expo
         script: |
-          echo $EXPO_TOKEN | npx expo login --non-interactive
-      - name: Debug Expo auth
+          npx expo login --non-interactive
+      - name: Debug Expo auth (after login)
         script: |
           npx expo whoami
           npx eas whoami
