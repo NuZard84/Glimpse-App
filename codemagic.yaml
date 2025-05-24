@@ -1,0 +1,17 @@
+workflows:
+  expo-ios:
+    name: Expo iOS Build
+    environment:
+      vars:
+        EXPO_TOKEN: $EXPO_TOKEN
+      node: 18
+    scripts:
+      - npm install -g expo-cli eas-cli
+      - npm install
+      - eas build --platform ios --non-interactive --profile preview
+    artifacts:
+      - build/**/*
+    publishing:
+      email:
+        recipients:
+          - your@email.com
