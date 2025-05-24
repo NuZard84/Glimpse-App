@@ -27,6 +27,7 @@ export const lightTheme: ThemeColors = {
     bg_info: "#D9E1FF",
     bg_success: "#D9FFDF",
 
+
     font_warn: "#FFD067",
     font_dark: "#1E1E1E",
     font_placeholder: "#0000004D",
@@ -48,7 +49,7 @@ export const darkTheme: ThemeColors = {
 
     font_dark: "#FFFFFF",
     font_placeholder: "#FFFFFF4D",
-    font_brand: "#BB86FC",
+    font_brand: "#7D73EA",
     font_error: "#FF6B78",
     font_warn: "#FFE096",
     font_info: "#A8BDFF",

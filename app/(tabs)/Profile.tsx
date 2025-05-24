@@ -4,9 +4,13 @@ import { typography } from "@/constants/styles";
 import { logout } from "@/redux/actions/userActions";
 import { store } from "@/redux/store";
 import { FontAwesome5 } from "@expo/vector-icons";
+import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
 import Animated, { FadeInDown } from "react-native-reanimated";
+import AlertModal, { AlertType } from "../../common/modals/AlertModal";
+import BottomUpModal, {
+  BottomModalType,
+} from "../../common/modals/BottomUpModal";
 
 // Define types for menu items
 type MenuItem = {
@@ -16,46 +20,16 @@ type MenuItem = {
   onPress?: () => void;
 };
 
-// Menu items for the General section
-const generalMenuItems: MenuItem[] = [
-  { id: "1", title: "edit Avatar", icon: "user-circle" },
-  { id: "2", title: "edit username", icon: "user-edit" },
-  { id: "3", title: "edit phone number", icon: "phone" },
-  { id: "4", title: "edit email", icon: "envelope" },
-  { id: "5", title: "edit date of birth", icon: "birthday-cake" },
-  { id: "6", title: "reset password", icon: "key" },
-  { id: "7", title: "set up widget", icon: "th" },
-];
-
-// Menu items for the About us section
-const aboutMenuItems: MenuItem[] = [
-  { id: "1", title: "Instagram", icon: "instagram" },
-  { id: "2", title: "Twitter", icon: "twitter" },
-  { id: "3", title: "TikTok", icon: "tiktok" },
-  { id: "4", title: "Share app", icon: "share-alt" },
-  { id: "5", title: "Rate app", icon: "star" },
-  { id: "6", title: "Terms of Services", icon: "file-alt" },
-  { id: "7", title: "Privacy policy", icon: "shield-alt" },
-];
-
-//Accounts Menu Items
-const accountsMenuItems: MenuItem[] = [
-  { id: "1", title: "Delete Account", icon: "trash" },
-  {
-    id: "2",
-    title: "Sign out",
-    icon: "sign-out-alt",
-    onPress: () => {
-      store.dispatch(logout());
-      console.log("sign out");
-    },
-  },
-];
-
 // Define types for component props
 type MenuItemProps = {
   item: MenuItem;
   index: number;
+  colors: any;
+};
+
+type MenuSectionProps = {
+  title: string;
+  items: MenuItem[];
   colors: any;
 };
 
@@ -98,12 +72,6 @@ const MenuItem = ({ item, index, colors }: MenuItemProps) => {
   );
 };
 
-type MenuSectionProps = {
-  title: string;
-  items: MenuItem[];
-  colors: any;
-};
-
 // Menu Section Component
 const MenuSection = ({ title, items, colors }: MenuSectionProps) => {
   return (
@@ -135,95 +103,324 @@ const MenuSection = ({ title, items, colors }: MenuSectionProps) => {
 export default function Profile() {
   const colors = useAppColors();
 
+  // Modal states
+  const [alertModal, setAlertModal] = useState({
+    visible: false,
+    type: "info" as AlertType,
+    title: "",
+    message: "",
+    primaryButtonText: "OK",
+    secondaryButtonText: "",
+    onPrimaryPress: () => {},
+    onSecondaryPress: () => {},
+  });
+
+  const [bottomModal, setBottomModal] = useState({
+    visible: false,
+    type: "input" as BottomModalType,
+    title: "",
+    placeholder: "",
+    value: "",
+    primaryButtonText: "continue",
+    secondaryButtonText: "cancel",
+    onPrimaryPress: () => {},
+  });
+
+  const [inputValue, setInputValue] = useState("");
+
+  // Modal handlers
+  const showAlertModal = (config: Partial<typeof alertModal>) => {
+    setAlertModal((prev) => ({ ...prev, ...config, visible: true }));
+  };
+
+  const hideAlertModal = () => {
+    setAlertModal((prev) => ({ ...prev, visible: false }));
+  };
+
+  const showBottomModal = (config: Partial<typeof bottomModal>) => {
+    setBottomModal((prev) => ({ ...prev, ...config, visible: true }));
+  };
+
+  const hideBottomModal = () => {
+    setBottomModal((prev) => ({ ...prev, visible: false }));
+    setInputValue("");
+  };
+
+  const handleSignOut = () => {
+    showAlertModal({
+      type: "warn",
+      title: "Sign Out",
+      message: "Are you sure you want to sign out?",
+      primaryButtonText: "Sign Out",
+      secondaryButtonText: "Cancel",
+      onPrimaryPress: () => {
+        store.dispatch(logout());
+        hideAlertModal();
+      },
+      onSecondaryPress: hideAlertModal,
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    showAlertModal({
+      type: "error",
+      title: "wanna delete your account",
+      message: "we wont be able to recovery once account is deleted.",
+      primaryButtonText: "delete",
+      secondaryButtonText: "cancel",
+      onPrimaryPress: () => {
+        console.log("Account deleted");
+        hideAlertModal();
+      },
+      onSecondaryPress: hideAlertModal,
+    });
+  };
+
+  const handleEditAvatar = () => {
+    showBottomModal({
+      type: "avatar",
+      title: "Select Avatar",
+      primaryButtonText: "continue",
+      onPrimaryPress: () => {
+        console.log("Avatar updated");
+        hideBottomModal();
+      },
+    });
+  };
+
+  const handleEditUsername = () => {
+    showBottomModal({
+      type: "input",
+      title: "update username",
+      placeholder: "username",
+      value: inputValue,
+      primaryButtonText: "continue",
+      onPrimaryPress: () => {
+        console.log("Username updated:", inputValue);
+        hideBottomModal();
+      },
+    });
+  };
+
+  const handleEditPhone = () => {
+    showBottomModal({
+      type: "input",
+      title: "update phone number",
+      placeholder: "phone number",
+      value: inputValue,
+      primaryButtonText: "continue",
+      onPrimaryPress: () => {
+        console.log("Phone updated:", inputValue);
+        hideBottomModal();
+      },
+    });
+  };
+
+  const handleEditEmail = () => {
+    showBottomModal({
+      type: "input",
+      title: "update email",
+      placeholder: "email address",
+      value: inputValue,
+      primaryButtonText: "continue",
+      onPrimaryPress: () => {
+        console.log("Email updated:", inputValue);
+        hideBottomModal();
+      },
+    });
+  };
+
+  const handleEditDateOfBirth = () => {
+    showBottomModal({
+      type: "input",
+      title: "update date of birth",
+      placeholder: "DD/MM/YYYY",
+      value: inputValue,
+      primaryButtonText: "continue",
+      onPrimaryPress: () => {
+        console.log("Date of birth updated:", inputValue);
+        hideBottomModal();
+      },
+    });
+  };
+
+  const handleResetPassword = () => {
+    showBottomModal({
+      type: "input",
+      title: "reset password",
+      placeholder: "new password",
+      value: inputValue,
+      primaryButtonText: "continue",
+      onPrimaryPress: () => {
+        console.log("Password reset:", inputValue);
+        hideBottomModal();
+      },
+    });
+  };
+
+  // Menu items for the General section
+  const generalMenuItems: MenuItem[] = [
+    {
+      id: "1",
+      title: "edit Avatar",
+      icon: "user-circle",
+      onPress: handleEditAvatar,
+    },
+    {
+      id: "2",
+      title: "edit username",
+      icon: "user-edit",
+      onPress: handleEditUsername,
+    },
+    {
+      id: "3",
+      title: "edit phone number",
+      icon: "phone",
+      onPress: handleEditPhone,
+    },
+    {
+      id: "4",
+      title: "edit email",
+      icon: "envelope",
+      onPress: handleEditEmail,
+    },
+    {
+      id: "5",
+      title: "edit date of birth",
+      icon: "birthday-cake",
+      onPress: handleEditDateOfBirth,
+    },
+    {
+      id: "6",
+      title: "reset password",
+      icon: "key",
+      onPress: handleResetPassword,
+    },
+    { id: "7", title: "set up widget", icon: "th" },
+  ];
+
+  // Menu items for the About us section
+  const aboutMenuItems: MenuItem[] = [
+    { id: "1", title: "Instagram", icon: "instagram" },
+    { id: "2", title: "Twitter", icon: "twitter" },
+    { id: "3", title: "TikTok", icon: "tiktok" },
+    { id: "4", title: "Share app", icon: "share-alt" },
+    { id: "5", title: "Rate app", icon: "star" },
+    { id: "6", title: "Terms of Services", icon: "file-alt" },
+    { id: "7", title: "Privacy policy", icon: "shield-alt" },
+  ];
+
+  // Accounts Menu Items
+  const accountsMenuItems: MenuItem[] = [
+    {
+      id: "1",
+      title: "Delete Account",
+      icon: "trash",
+      onPress: handleDeleteAccount,
+    },
+    {
+      id: "2",
+      title: "Sign out",
+      icon: "sign-out-alt",
+      onPress: handleSignOut,
+    },
+  ];
+
   return (
-    <HeaderContainer
-      isScrollable={true}
-      withPadding={true}
-      headerProps={{
-        title: "Profile",
-        showBackButton: true,
-        showRightButtons: false,
-      }}
-    >
-      {/* Profile Info */}
-      <View style={styles.profileInfo}>
-        <Animated.View
-          entering={FadeInDown.springify()}
-          style={styles.avatarContainer}
-        >
-          <Image
-            source={require("@/assets/images/logo.png")}
-            style={styles.avatar}
-          />
-        </Animated.View>
-        <Animated.Text
-          entering={FadeInDown.delay(100).springify()}
-          style={[typography.h1, { color: colors.font_dark, marginTop: 12 }]}
-        >
-          Nishchit Malasana
-        </Animated.Text>
-        <Animated.View
-          entering={FadeInDown.delay(200).springify()}
-          style={[styles.friendsContainer, { backgroundColor: colors.bg_gray }]}
-        >
-          <FontAwesome5
-            name="user-friends"
-            size={16}
-            color={colors.font_dark}
-          />
-          <Text style={[typography.bodySm, { color: colors.font_dark }]}>
-            friends 18
-          </Text>
-        </Animated.View>
-      </View>
+    <>
+      <HeaderContainer
+        isScrollable={true}
+        withPadding={true}
+        headerProps={{
+          title: "Profile",
+          showBackButton: true,
+          showRightButtons: false,
+        }}
+      >
+        {/* Profile Info */}
+        <View style={styles.profileInfo}>
+          <Animated.View
+            entering={FadeInDown.springify()}
+            style={styles.avatarContainer}
+          >
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.avatar}
+            />
+          </Animated.View>
+          <Animated.Text
+            entering={FadeInDown.delay(100).springify()}
+            style={[typography.h1, { color: colors.font_dark, marginTop: 12 }]}
+          >
+            Nishchit Malasana
+          </Animated.Text>
+          <Animated.View
+            entering={FadeInDown.delay(200).springify()}
+            style={[
+              styles.friendsContainer,
+              { backgroundColor: colors.bg_gray },
+            ]}
+          >
+            <FontAwesome5
+              name="user-friends"
+              size={16}
+              color={colors.font_brand}
+            />
+            <Text style={[typography.bodySm, { color: colors.font_dark }]}>
+              friends 18
+            </Text>
+          </Animated.View>
+        </View>
 
-      {/* General Menu */}
-      <MenuSection title="General" items={generalMenuItems} colors={colors} />
+        {/* General Menu */}
+        <MenuSection title="General" items={generalMenuItems} colors={colors} />
 
-      {/* About us Menu */}
-      <MenuSection title="About us" items={aboutMenuItems} colors={colors} />
+        {/* About us Menu */}
+        <MenuSection title="About us" items={aboutMenuItems} colors={colors} />
 
-      {/* Accounts Menu */}
-      <MenuSection title="Accounts" items={accountsMenuItems} colors={colors} />
+        {/* Accounts Menu */}
+        <MenuSection
+          title="Accounts"
+          items={accountsMenuItems}
+          colors={colors}
+        />
 
-      {/* Spacing at the bottom */}
-      <View style={{ height: 40 }} />
-    </HeaderContainer>
+        {/* Spacing at the bottom */}
+        <View style={{ height: 40 }} />
+      </HeaderContainer>
+
+      {/* Alert Modal */}
+      <AlertModal
+        visible={alertModal.visible}
+        type={alertModal.type}
+        title={alertModal.title}
+        message={alertModal.message}
+        primaryButtonText={alertModal.primaryButtonText}
+        secondaryButtonText={alertModal.secondaryButtonText}
+        onPrimaryPress={alertModal.onPrimaryPress}
+        onSecondaryPress={alertModal.onSecondaryPress}
+        onClose={hideAlertModal}
+      />
+
+      {/* Bottom Up Modal */}
+      <BottomUpModal
+        visible={bottomModal.visible}
+        type={bottomModal.type}
+        title={bottomModal.title}
+        placeholder={bottomModal.placeholder}
+        value={inputValue}
+        onChangeText={setInputValue}
+        primaryButtonText={bottomModal.primaryButtonText}
+        secondaryButtonText={bottomModal.secondaryButtonText}
+        onPrimaryPress={bottomModal.onPrimaryPress}
+        onSecondaryPress={hideBottomModal}
+        onClose={hideBottomModal}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    position: "relative",
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-  },
-  headerTitle: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 8,
-  },
-  placeholder: {
-    width: 40,
-  },
   profileInfo: {
     alignItems: "center",
     marginTop: 16,

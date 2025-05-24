@@ -85,7 +85,7 @@ export default function BlurHeader({
           onPress={onBackPress || (() => router.back())}
           style={[
             styles.iconButton,
-            { backgroundColor: hexToRgba(colors.bg_offwhite, 0.8) },
+            { backgroundColor: hexToRgba(colors.bg_offwhite, 1) },
           ]}
         >
           {leftIcon ? (
@@ -114,7 +114,7 @@ export default function BlurHeader({
       <View
         style={[
           styles.titleContainer,
-          { backgroundColor: hexToRgba(colors.bg_offwhite, 0.8) },
+          { backgroundColor: hexToRgba(colors.bg_offwhite, 1) },
         ]}
       >
         <MaterialCommunityIcons
@@ -263,10 +263,10 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 100,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    gap: 8,
+    borderRadius: 55,
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    gap: 5,
   },
   iconButton: {
     width: 36,
