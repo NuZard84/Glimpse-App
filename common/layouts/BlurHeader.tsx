@@ -25,6 +25,7 @@ export type BlurHeaderProps = {
   customRightComponent?: React.ReactNode;
   customCenterComponent?: React.ReactNode;
   onBackPress?: () => void;
+  titleIcon?: any;
   blurIntensity?: number;
   leftIcon?: {
     name: string;
@@ -46,6 +47,7 @@ export default function BlurHeader({
   customLeftComponent,
   customRightComponent,
   customCenterComponent,
+  titleIcon,
   onBackPress,
   blurIntensity = 75,
   leftIcon,
@@ -101,7 +103,7 @@ export default function BlurHeader({
       );
     }
 
-    return <View style={{ width: 30 }} />;
+    return <View style={{ width: 36 }} />;
   };
 
   // Render center component (title or custom)
@@ -117,11 +119,18 @@ export default function BlurHeader({
           { backgroundColor: hexToRgba(colors.bg_offwhite, 1) },
         ]}
       >
-        <MaterialCommunityIcons
+        {titleIcon && titleIcon}
+        {/* <Feather
+          name="user"
+          size={17}
+          style={{ marginBottom: 1.5 }}
+          color={colors.font_dark}
+        /> */}
+        {/* <MaterialCommunityIcons
           name="account-circle-outline"
           size={20}
           color={colors.font_dark}
-        />
+        /> */}
         <View>
           <Text
             style={{
@@ -162,7 +171,7 @@ export default function BlurHeader({
                 onPress={icon.onPress}
                 style={[
                   styles.iconButton,
-                  { backgroundColor: hexToRgba(colors.bg_offwhite, 0.3) },
+                  { backgroundColor: hexToRgba(colors.bg_offwhite, 1) },
                 ]}
               >
                 {getIconComponent(icon.name, icon.type)}
@@ -177,7 +186,7 @@ export default function BlurHeader({
           <TouchableOpacity
             style={[
               styles.iconButton,
-              { backgroundColor: hexToRgba(colors.bg_offwhite, 0.3) },
+              { backgroundColor: hexToRgba(colors.bg_offwhite, 1) },
             ]}
           >
             <MaterialIcons
@@ -190,7 +199,7 @@ export default function BlurHeader({
             onPress={() => router.push("/(tabs)/Profile")}
             style={[
               styles.iconButton,
-              { backgroundColor: hexToRgba(colors.bg_offwhite, 0.3) },
+              { backgroundColor: hexToRgba(colors.bg_offwhite, 1) },
             ]}
           >
             <MaterialCommunityIcons
@@ -203,7 +212,7 @@ export default function BlurHeader({
       );
     }
 
-    return <View style={{ width: 32 }} />;
+    return <View style={{ width: 36 }} />;
   };
 
   // iOS implementation with BlurView
@@ -212,14 +221,16 @@ export default function BlurHeader({
       <View style={[styles.headerContainer, { height: insets.top + 60 }]}>
         <BlurView
           intensity={blurIntensity}
-          tint="light"
+          tint="dark"
           style={StyleSheet.absoluteFillObject}
         >
           <SafeAreaView style={{ flex: 1 }}>
             <View style={styles.headerContent}>
-              {renderLeftComponent()}
-              {renderCenterComponent()}
-              {renderRightComponent()}
+              <View style={styles.leftSection}>{renderLeftComponent()}</View>
+              <View style={styles.centerSection}>
+                {renderCenterComponent()}
+              </View>
+              <View style={styles.rightSection}>{renderRightComponent()}</View>
             </View>
           </SafeAreaView>
         </BlurView>
@@ -232,13 +243,13 @@ export default function BlurHeader({
     <SafeAreaView
       style={[
         styles.headerContainer,
-        { backgroundColor: hexToRgba(colors.bg_offwhite, 0.85) },
+        { backgroundColor: hexToRgba(colors.bg_offwhite, 0.75) },
       ]}
     >
       <View style={styles.headerContent}>
-        {renderLeftComponent()}
-        {renderCenterComponent()}
-        {renderRightComponent()}
+        <View style={styles.leftSection}>{renderLeftComponent()}</View>
+        <View style={styles.centerSection}>{renderCenterComponent()}</View>
+        <View style={styles.rightSection}>{renderRightComponent()}</View>
       </View>
     </SafeAreaView>
   );
@@ -255,14 +266,27 @@ const styles = StyleSheet.create({
   headerContent: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingVertical: 8,
     height: 60,
   },
+  leftSection: {
+    flex: 1,
+    alignItems: "flex-start",
+  },
+  centerSection: {
+    flex: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rightSection: {
+    flex: 1,
+    alignItems: "flex-end",
+  },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     borderRadius: 55,
     paddingHorizontal: 7,
     paddingVertical: 4,

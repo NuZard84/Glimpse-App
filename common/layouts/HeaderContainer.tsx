@@ -31,7 +31,7 @@ export default function HeaderContainer({
   isCenter = false,
   isScrollable = true,
   withPadding = true,
-  extraPaddingTop = 0,
+  extraPaddingTop = 10,
   contentContainerStyle,
   headerProps,
   hideHeader = false,
@@ -44,7 +44,7 @@ export default function HeaderContainer({
   const headerHeight = hideHeader
     ? 0
     : Platform.OS === "ios"
-    ? insets.top + 60 + extraPaddingTop
+    ? insets.top + 62 + extraPaddingTop
     : statusBarHeight + 60 + extraPaddingTop;
 
   return (

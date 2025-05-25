@@ -2,11 +2,13 @@ import HeaderContainer from "@/common/layouts/HeaderContainer";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
 import { logout } from "@/redux/actions/userActions";
+import { UserState } from "@/redux/reducers/userReducer";
 import { store } from "@/redux/store";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useSelector } from "react-redux";
 import AlertModal, { AlertType } from "../../common/modals/AlertModal";
 import BottomUpModal, {
   BottomModalType,
@@ -101,6 +103,7 @@ const MenuSection = ({ title, items, colors }: MenuSectionProps) => {
 };
 
 export default function Profile() {
+  const user = useSelector((state: { user: UserState }) => state.user);
   const colors = useAppColors();
 
   // Modal states
@@ -124,6 +127,10 @@ export default function Profile() {
     primaryButtonText: "continue",
     secondaryButtonText: "cancel",
     onPrimaryPress: () => {},
+    needPass: false,
+    onPasswordVerify: undefined as
+      | ((password: string) => Promise<boolean>)
+      | undefined,
   });
 
   const [inputValue, setInputValue] = useState("");
@@ -161,18 +168,37 @@ export default function Profile() {
     });
   };
 
+  // Mock password verification function - replace with actual implementation
+  const verifyPassword = async (password: string): Promise<boolean> => {
+    // In a real app, you would verify the password against the backend
+    // For demo purposes, any password with length >= 4 is "valid"
+    return password.length >= 4;
+  };
+
   const handleDeleteAccount = () => {
-    showAlertModal({
-      type: "error",
-      title: "wanna delete your account",
-      message: "we wont be able to recovery once account is deleted.",
-      primaryButtonText: "delete",
-      secondaryButtonText: "cancel",
+    showBottomModal({
+      type: "input",
+      title: "verify it's you",
+      placeholder: "enter your password",
+      needPass: true,
+      primaryButtonText: "verify",
       onPrimaryPress: () => {
-        console.log("Account deleted");
-        hideAlertModal();
+        // Password verification successful, now show the confirmation alert
+        hideBottomModal();
+        showAlertModal({
+          type: "error",
+          title: "wanna delete your account",
+          message: "we wont be able to recovery once account is deleted.",
+          primaryButtonText: "delete",
+          secondaryButtonText: "cancel",
+          onPrimaryPress: () => {
+            console.log("Account deleted");
+            hideAlertModal();
+          },
+          onSecondaryPress: hideAlertModal,
+        });
       },
-      onSecondaryPress: hideAlertModal,
+      onPasswordVerify: verifyPassword,
     });
   };
 
@@ -181,6 +207,7 @@ export default function Profile() {
       type: "avatar",
       title: "Select Avatar",
       primaryButtonText: "continue",
+
       onPrimaryPress: () => {
         console.log("Avatar updated");
         hideBottomModal();
@@ -335,6 +362,13 @@ export default function Profile() {
           title: "Profile",
           showBackButton: true,
           showRightButtons: false,
+          titleIcon: (
+            <MaterialCommunityIcons
+              name="account-circle-outline"
+              size={20}
+              color={colors.font_dark}
+            />
+          ),
         }}
       >
         {/* Profile Info */}
@@ -352,7 +386,7 @@ export default function Profile() {
             entering={FadeInDown.delay(100).springify()}
             style={[typography.h1, { color: colors.font_dark, marginTop: 12 }]}
           >
-            Nishchit Malasana
+            {user?.profile?.username}
           </Animated.Text>
           <Animated.View
             entering={FadeInDown.delay(200).springify()}
@@ -385,11 +419,9 @@ export default function Profile() {
           colors={colors}
         />
 
-        {/* Spacing at the bottom */}
         <View style={{ height: 40 }} />
       </HeaderContainer>
 
-      {/* Alert Modal */}
       <AlertModal
         visible={alertModal.visible}
         type={alertModal.type}
@@ -402,7 +434,6 @@ export default function Profile() {
         onClose={hideAlertModal}
       />
 
-      {/* Bottom Up Modal */}
       <BottomUpModal
         visible={bottomModal.visible}
         type={bottomModal.type}
@@ -415,6 +446,8 @@ export default function Profile() {
         onPrimaryPress={bottomModal.onPrimaryPress}
         onSecondaryPress={hideBottomModal}
         onClose={hideBottomModal}
+        needPass={bottomModal.needPass}
+        onPasswordVerify={bottomModal.needPass ? verifyPassword : undefined}
       />
     </>
   );

@@ -1,5 +1,6 @@
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import { AntDesign, Entypo, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   Dimensions,
@@ -81,6 +82,49 @@ const AlertModal: React.FC<AlertModalProps> = ({
     }
   };
 
+  const renderIcon = () => {
+    const iconSize = 54;
+
+    switch (type) {
+      case "error":
+        return (
+          <MaterialIcons
+            name="dangerous"
+            size={iconSize}
+            color={colors.font_error}
+          />
+        );
+      case "warn":
+        return (
+          <Entypo name="warning" size={iconSize} color={colors.font_warn} />
+        );
+      case "info":
+        return (
+          <AntDesign
+            name="infocirlce"
+            size={iconSize}
+            color={colors.font_info}
+          />
+        );
+      case "success":
+        return (
+          <Ionicons
+            name="checkmark-circle-sharp"
+            size={iconSize}
+            color={colors.font_success}
+          />
+        );
+      default:
+        return (
+          <AntDesign
+            name="infocirlce"
+            size={iconSize}
+            color={colors.font_info}
+          />
+        );
+    }
+  };
+
   return (
     <Modal transparent visible={visible} animationType="none">
       <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
@@ -89,6 +133,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
           activeOpacity={1}
           onPress={onClose}
         />
+
         <Animated.View
           style={[
             styles.modalContainer,
@@ -96,6 +141,9 @@ const AlertModal: React.FC<AlertModalProps> = ({
             animatedModalStyle,
           ]}
         >
+          <View style={{ alignItems: "center", marginBottom: 16 }}>
+            {renderIcon()}
+          </View>
           <Text
             style={[styles.title, typography.h2, { color: colors.font_dark }]}
           >
@@ -110,7 +158,6 @@ const AlertModal: React.FC<AlertModalProps> = ({
           >
             {message}
           </Text>
-
           <View style={styles.buttonContainer}>
             {secondaryButtonText && (
               <TouchableOpacity

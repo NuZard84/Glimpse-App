@@ -1,25 +1,24 @@
-import React from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  TextInput,
-  Image,
-  ScrollView,
-} from "react-native";
-import { FontAwesome5 } from "@expo/vector-icons";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  runOnJS,
-} from "react-native-reanimated";
 import { useAppColors } from "@/constants/Colors";
 import { typography } from "@/constants/styles";
+import { FontAwesome5 } from "@expo/vector-icons";
+import React from "react";
+import {
+  Dimensions,
+  Image,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -37,9 +36,10 @@ interface BottomUpModalProps {
   onPrimaryPress?: () => void;
   onSecondaryPress?: () => void;
   onClose: () => void;
-  avatars?: any[]; // Array of avatar sources
+  avatars?: any[];
+  needPass?: boolean; // New prop
+  onPasswordVerify?: (password: string) => Promise<boolean>; // New prop for password verification
 }
-
 const BottomUpModal: React.FC<BottomUpModalProps> = ({
   visible,
   type,
@@ -53,11 +53,20 @@ const BottomUpModal: React.FC<BottomUpModalProps> = ({
   onSecondaryPress,
   onClose,
   avatars = [],
+  needPass = false,
+  onPasswordVerify,
 }) => {
   const colors = useAppColors();
   const translateY = useSharedValue(screenHeight);
   const opacity = useSharedValue(0);
   const [selectedAvatar, setSelectedAvatar] = React.useState(0);
+
+  // New state for password verification
+  const [showPasswordVerification, setShowPasswordVerification] =
+    React.useState(false);
+  const [password, setPassword] = React.useState("");
+  const [passwordError, setPasswordError] = React.useState("");
+  const [isVerifying, setIsVerifying] = React.useState(false);
 
   React.useEffect(() => {
     if (visible) {
@@ -69,6 +78,11 @@ const BottomUpModal: React.FC<BottomUpModalProps> = ({
         damping: 20,
         stiffness: 150,
       });
+      // Reset password states when modal closes
+      setShowPasswordVerification(false);
+      setPassword("");
+      setPasswordError("");
+      setIsVerifying(false);
     }
   }, [visible]);
 
@@ -81,7 +95,58 @@ const BottomUpModal: React.FC<BottomUpModalProps> = ({
   }));
 
   const handleOverlayPress = () => {
-    onClose();
+    if (!showPasswordVerification) {
+      onClose();
+    }
+  };
+
+  const handlePrimaryPress = async () => {
+    if (needPass && !showPasswordVerification) {
+      // Show password verification first
+      setShowPasswordVerification(true);
+      return;
+    }
+
+    if (showPasswordVerification) {
+      // Verify password
+      if (!onPasswordVerify) {
+        console.warn("Password verification function not provided");
+        return;
+      }
+
+      setIsVerifying(true);
+      setPasswordError("");
+
+      try {
+        const isValid = await onPasswordVerify(password);
+        if (isValid) {
+          // Password is correct, execute the original function
+          onPrimaryPress?.();
+          setShowPasswordVerification(false);
+          setPassword("");
+        } else {
+          setPasswordError("Incorrect password. Please try again.");
+        }
+      } catch (error) {
+        setPasswordError("Verification failed. Please try again.");
+      } finally {
+        setIsVerifying(false);
+      }
+    } else {
+      // Normal flow without password verification
+      onPrimaryPress?.();
+    }
+  };
+
+  const handleSecondaryPress = () => {
+    if (showPasswordVerification) {
+      // Cancel password verification, go back to main content
+      setShowPasswordVerification(false);
+      setPassword("");
+      setPasswordError("");
+    } else {
+      onSecondaryPress?.();
+    }
   };
 
   const defaultAvatars = [
@@ -120,105 +185,146 @@ const BottomUpModal: React.FC<BottomUpModalProps> = ({
           <Text
             style={[styles.title, typography.h2, { color: colors.font_dark }]}
           >
-            {title}
+            {showPasswordVerification ? "Enter Password" : title}
           </Text>
 
-          {type === "avatar" ? (
-            <ScrollView
-              style={styles.avatarContainer}
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={styles.avatarGrid}>
-                {avatarList.map((avatar, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.avatarItem,
-                      selectedAvatar === index && {
-                        borderColor: colors.font_brand,
-                        borderWidth: 3,
-                      },
-                    ]}
-                    onPress={() => setSelectedAvatar(index)}
-                  >
-                    <Image source={avatar} style={styles.avatarImage} />
-                    {selectedAvatar === index && (
-                      <View
-                        style={[
-                          styles.checkIcon,
-                          { backgroundColor: colors.font_brand },
-                        ]}
-                      >
-                        <FontAwesome5 name="check" size={12} color="#FFFFFF" />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {/* Gallery icon */}
-              <View style={styles.gallerySection}>
-                <TouchableOpacity
-                  style={[
-                    styles.galleryIcon,
-                    { backgroundColor: colors.bg_offwhite },
-                  ]}
-                >
-                  <FontAwesome5
-                    name="images"
-                    size={24}
-                    color={colors.font_dark}
-                  />
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          ) : (
-            <View style={styles.inputContainer}>
+          {showPasswordVerification ? (
+            // Password verification UI
+            <View style={styles.passwordContainer}>
               <TextInput
                 style={[
                   styles.textInput,
                   {
                     backgroundColor: colors.bg_offwhite,
                     color: colors.font_dark,
+                    borderWidth: passwordError ? 1 : 0,
+                    borderColor: passwordError
+                      ? colors.font_error
+                      : "transparent",
                   },
                 ]}
-                placeholder={placeholder}
+                placeholder="enter password"
                 placeholderTextColor={colors.font_placeholder}
-                value={value}
-                onChangeText={onChangeText}
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (passwordError) setPasswordError("");
+                }}
+                secureTextEntry
+                autoFocus
               />
+              {passwordError ? (
+                <Text style={[styles.errorText, { color: colors.font_error }]}>
+                  {passwordError}
+                </Text>
+              ) : null}
             </View>
+          ) : (
+            // Original content
+            <>
+              {type === "avatar" ? (
+                <ScrollView
+                  style={styles.avatarContainer}
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View style={styles.avatarGrid}>
+                    {avatarList.map((avatar, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={[
+                          styles.avatarItem,
+                          selectedAvatar === index && {
+                            borderColor: colors.font_brand,
+                            borderWidth: 3,
+                          },
+                        ]}
+                        onPress={() => setSelectedAvatar(index)}
+                      >
+                        <Image source={avatar} style={styles.avatarImage} />
+                        {selectedAvatar === index && (
+                          <View
+                            style={[
+                              styles.checkIcon,
+                              { backgroundColor: colors.font_brand },
+                            ]}
+                          >
+                            <FontAwesome5
+                              name="check"
+                              size={12}
+                              color="#FFFFFF"
+                            />
+                          </View>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  <View style={styles.gallerySection}>
+                    <TouchableOpacity
+                      style={[
+                        styles.galleryIcon,
+                        { backgroundColor: colors.bg_offwhite },
+                      ]}
+                    >
+                      <FontAwesome5
+                        name="images"
+                        size={24}
+                        color={colors.font_dark}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              ) : (
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={[
+                      styles.textInput,
+                      {
+                        backgroundColor: colors.bg_offwhite,
+                        color: colors.font_dark,
+                      },
+                    ]}
+                    placeholder={placeholder}
+                    placeholderTextColor={colors.font_placeholder}
+                    value={value}
+                    onChangeText={onChangeText}
+                  />
+                </View>
+              )}
+            </>
           )}
 
           <View style={styles.buttonContainer}>
-            {secondaryButtonText && (
-              <TouchableOpacity
+            <TouchableOpacity
+              style={[
+                styles.button,
+                styles.secondaryButton,
+                { backgroundColor: colors.bg_offwhite },
+              ]}
+              onPress={handleSecondaryPress}
+            >
+              <Text
                 style={[
-                  styles.button,
-                  styles.secondaryButton,
-                  { backgroundColor: colors.bg_offwhite },
+                  styles.buttonText,
+                  typography.body,
+                  { color: colors.font_dark },
                 ]}
-                onPress={onSecondaryPress || onClose}
               >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    typography.body,
-                    { color: colors.font_dark },
-                  ]}
-                >
-                  {secondaryButtonText}
-                </Text>
-              </TouchableOpacity>
-            )}
+                {showPasswordVerification ? "back" : secondaryButtonText}
+              </Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[
                 styles.button,
                 styles.primaryButton,
-                { backgroundColor: colors.font_brand },
+                {
+                  backgroundColor: colors.font_brand,
+                  opacity: isVerifying ? 0.6 : 1,
+                },
               ]}
-              onPress={onPrimaryPress || onClose}
+              onPress={handlePrimaryPress}
+              disabled={isVerifying}
             >
               <Text
                 style={[
@@ -227,7 +333,11 @@ const BottomUpModal: React.FC<BottomUpModalProps> = ({
                   { color: "#FFFFFF" },
                 ]}
               >
-                {primaryButtonText}
+                {isVerifying
+                  ? "verifying..."
+                  : showPasswordVerification
+                  ? "verify"
+                  : primaryButtonText}
               </Text>
             </TouchableOpacity>
           </View>
@@ -338,6 +448,14 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontWeight: "500",
+  },
+  passwordContainer: {
+    marginBottom: 24,
+  },
+  errorText: {
+    fontSize: 14,
+    marginTop: 8,
+    marginLeft: 20,
   },
 });
 
