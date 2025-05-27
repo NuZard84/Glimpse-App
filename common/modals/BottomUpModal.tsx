@@ -5,12 +5,15 @@ import React from "react";
 import {
   Dimensions,
   Image,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import Animated, {
@@ -160,189 +163,202 @@ const BottomUpModal: React.FC<BottomUpModalProps> = ({
 
   return (
     <Modal transparent visible={visible} animationType="none">
-      <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
-        <TouchableOpacity
-          style={styles.overlayTouch}
-          activeOpacity={1}
-          onPress={handleOverlayPress}
-        />
-
-        <Animated.View
-          style={[
-            styles.modalContainer,
-            { backgroundColor: colors.bg_gray },
-            animatedModalStyle,
-          ]}
+      <TouchableWithoutFeedback onPress={handleOverlayPress}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          style={{ flex: 1 }}
         >
-          {/* Handle bar */}
-          <View
-            style={[
-              styles.handleBar,
-              { backgroundColor: colors.font_placeholder },
-            ]}
-          />
+          <Animated.View style={[styles.overlay, animatedOverlayStyle]}>
+            <TouchableOpacity
+              style={styles.overlayTouch}
+              activeOpacity={1}
+              onPress={handleOverlayPress}
+            />
 
-          <Text
-            style={[styles.title, typography.h2, { color: colors.font_dark }]}
-          >
-            {showPasswordVerification ? "Enter Password" : title}
-          </Text>
-
-          {showPasswordVerification ? (
-            // Password verification UI
-            <View style={styles.passwordContainer}>
-              <TextInput
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                { backgroundColor: colors.bg_gray },
+                animatedModalStyle,
+              ]}
+            >
+              {/* Handle bar */}
+              <View
                 style={[
-                  styles.textInput,
-                  {
-                    backgroundColor: colors.bg_offwhite,
-                    color: colors.font_dark,
-                    borderWidth: passwordError ? 1 : 0,
-                    borderColor: passwordError
-                      ? colors.font_error
-                      : "transparent",
-                  },
+                  styles.handleBar,
+                  { backgroundColor: colors.font_placeholder },
                 ]}
-                placeholder="enter password"
-                placeholderTextColor={colors.font_placeholder}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (passwordError) setPasswordError("");
-                }}
-                secureTextEntry
-                autoFocus
               />
-              {passwordError ? (
-                <Text style={[styles.errorText, { color: colors.font_error }]}>
-                  {passwordError}
-                </Text>
-              ) : null}
-            </View>
-          ) : (
-            // Original content
-            <>
-              {type === "avatar" ? (
-                <ScrollView
-                  style={styles.avatarContainer}
-                  showsVerticalScrollIndicator={false}
-                >
-                  <View style={styles.avatarGrid}>
-                    {avatarList.map((avatar, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.avatarItem,
-                          selectedAvatar === index && {
-                            borderColor: colors.font_brand,
-                            borderWidth: 3,
-                          },
-                        ]}
-                        onPress={() => setSelectedAvatar(index)}
-                      >
-                        <Image source={avatar} style={styles.avatarImage} />
-                        {selectedAvatar === index && (
-                          <View
-                            style={[
-                              styles.checkIcon,
-                              { backgroundColor: colors.font_brand },
-                            ]}
-                          >
-                            <FontAwesome5
-                              name="check"
-                              size={12}
-                              color="#FFFFFF"
-                            />
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </View>
 
-                  <View style={styles.gallerySection}>
-                    <TouchableOpacity
-                      style={[
-                        styles.galleryIcon,
-                        { backgroundColor: colors.bg_offwhite },
-                      ]}
-                    >
-                      <FontAwesome5
-                        name="images"
-                        size={24}
-                        color={colors.font_dark}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </ScrollView>
-              ) : (
-                <View style={styles.inputContainer}>
+              <Text
+                style={[
+                  styles.title,
+                  typography.h2,
+                  { color: colors.font_dark },
+                ]}
+              >
+                {showPasswordVerification ? "Enter Password" : title}
+              </Text>
+
+              {showPasswordVerification ? (
+                // Password verification UI
+                <View style={styles.passwordContainer}>
                   <TextInput
                     style={[
                       styles.textInput,
                       {
                         backgroundColor: colors.bg_offwhite,
-                        color: colors.font_dark,
+                        color: colors.font_brand,
+                        borderWidth: passwordError ? 1 : 0,
+                        borderColor: passwordError
+                          ? colors.font_error
+                          : "transparent",
                       },
                     ]}
-                    placeholder={placeholder}
+                    placeholder="enter password"
                     placeholderTextColor={colors.font_placeholder}
-                    value={value}
-                    onChangeText={onChangeText}
+                    value={password}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      if (passwordError) setPasswordError("");
+                    }}
+                    secureTextEntry
+                    autoFocus
                   />
+                  {passwordError ? (
+                    <Text
+                      style={[styles.errorText, { color: colors.font_error }]}
+                    >
+                      {passwordError}
+                    </Text>
+                  ) : null}
                 </View>
+              ) : (
+                // Original content
+                <>
+                  {type === "avatar" ? (
+                    <ScrollView
+                      style={styles.avatarContainer}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      <View style={styles.avatarGrid}>
+                        {avatarList.map((avatar, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={[
+                              styles.avatarItem,
+                              selectedAvatar === index && {
+                                borderColor: colors.font_brand,
+                                borderWidth: 3,
+                              },
+                            ]}
+                            onPress={() => setSelectedAvatar(index)}
+                          >
+                            <Image source={avatar} style={styles.avatarImage} />
+                            {selectedAvatar === index && (
+                              <View
+                                style={[
+                                  styles.checkIcon,
+                                  { backgroundColor: colors.font_brand },
+                                ]}
+                              >
+                                <FontAwesome5
+                                  name="check"
+                                  size={12}
+                                  color="#FFFFFF"
+                                />
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+
+                      <View style={styles.gallerySection}>
+                        <TouchableOpacity
+                          style={[
+                            styles.galleryIcon,
+                            { backgroundColor: colors.bg_offwhite },
+                          ]}
+                        >
+                          <FontAwesome5
+                            name="images"
+                            size={24}
+                            color={colors.font_dark}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </ScrollView>
+                  ) : (
+                    <View style={styles.inputContainer}>
+                      <TextInput
+                        style={[
+                          styles.textInput,
+                          {
+                            backgroundColor: colors.bg_offwhite,
+                            color: colors.font_brand,
+                          },
+                        ]}
+                        placeholder={placeholder}
+                        placeholderTextColor={colors.font_placeholder}
+                        value={value}
+                        onChangeText={onChangeText}
+                      />
+                    </View>
+                  )}
+                </>
               )}
-            </>
-          )}
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[
-                styles.button,
-                styles.secondaryButton,
-                { backgroundColor: colors.bg_offwhite },
-              ]}
-              onPress={handleSecondaryPress}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  typography.body,
-                  { color: colors.font_dark },
-                ]}
-              >
-                {showPasswordVerification ? "back" : secondaryButtonText}
-              </Text>
-            </TouchableOpacity>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.secondaryButton,
+                    { backgroundColor: colors.font_dark },
+                  ]}
+                  onPress={handleSecondaryPress}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      typography.body,
+                      { color: colors.bg_offwhite },
+                    ]}
+                  >
+                    {showPasswordVerification ? "back" : secondaryButtonText}
+                  </Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.button,
-                styles.primaryButton,
-                {
-                  backgroundColor: colors.font_brand,
-                  opacity: isVerifying ? 0.6 : 1,
-                },
-              ]}
-              onPress={handlePrimaryPress}
-              disabled={isVerifying}
-            >
-              <Text
-                style={[
-                  styles.buttonText,
-                  typography.body,
-                  { color: "#FFFFFF" },
-                ]}
-              >
-                {isVerifying
-                  ? "verifying..."
-                  : showPasswordVerification
-                  ? "verify"
-                  : primaryButtonText}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      </Animated.View>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    styles.primaryButton,
+                    {
+                      backgroundColor: colors.font_brand,
+                      opacity: isVerifying ? 0.6 : 1,
+                    },
+                  ]}
+                  onPress={handlePrimaryPress}
+                  disabled={isVerifying}
+                >
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      typography.body,
+                      { color: "#FFFFFF" },
+                    ]}
+                  >
+                    {isVerifying
+                      ? "verifying..."
+                      : showPasswordVerification
+                      ? "verify"
+                      : primaryButtonText}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </Animated.View>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

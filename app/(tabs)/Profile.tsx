@@ -62,7 +62,7 @@ const MenuItem = ({ item, index, colors }: MenuItemProps) => {
             <FontAwesome5
               name={item.icon}
               size={18}
-              color={colors.font_brand}
+              color={colors.icon_brand}
             />
           )}
         </View>
@@ -155,7 +155,7 @@ export default function Profile() {
 
   const handleSignOut = () => {
     showAlertModal({
-      type: "warn",
+      type: "error",
       title: "Sign Out",
       message: "Are you sure you want to sign out?",
       primaryButtonText: "Sign Out",

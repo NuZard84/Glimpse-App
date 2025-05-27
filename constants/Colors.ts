@@ -16,6 +16,7 @@ export interface ThemeColors {
     font_brand: string;
     font_error: string;
     font_warn: string;
+    icon_brand: string;
 }
 
 export const lightTheme: ThemeColors = {
@@ -35,7 +36,7 @@ export const lightTheme: ThemeColors = {
     font_error: "#FF4757",
     font_info: "#7F9AFF",
     font_success: "#3ACF55",
-
+    icon_brand: "#7D73EA",
 };
 
 export const darkTheme: ThemeColors = {
@@ -49,11 +50,12 @@ export const darkTheme: ThemeColors = {
 
     font_dark: "#FFFFFF",
     font_placeholder: "#FFFFFF4D",
-    font_brand: "#7D73EA",
+    font_brand: "#6444CF",
     font_error: "#FF6B78",
     font_warn: "#FFE096",
     font_info: "#A8BDFF",
     font_success: "#6AE280",
+    icon_brand: "#7D73EA",
 };
 
 
