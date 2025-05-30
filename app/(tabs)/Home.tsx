@@ -185,19 +185,21 @@ export default function Home() {
             images={assets}
           />
         </View>
-        <TouchableOpacity
-          onPress={() => {
-            requestAllPermissions().then((granted) => {
-              if (granted) {
-                getAlbumsImages();
-              }
-            });
-          }}
-        >
-          <Text style={{ color: colors.font_dark, marginTop: 10 }}>
-            get albums
-          </Text>
-        </TouchableOpacity>
+        {__DEV__ && (
+          <TouchableOpacity
+            onPress={() => {
+              requestAllPermissions().then((granted) => {
+                if (granted) {
+                  getAlbumsImages();
+                }
+              });
+            }}
+          >
+            <Text style={{ color: colors.font_dark, marginTop: 10 }}>
+              get albums
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -223,8 +225,6 @@ export default function Home() {
     </HeaderContainer>
   );
 }
-
-// ... rest of your styles remain the same
 
 const styles = StyleSheet.create({
   container: {
