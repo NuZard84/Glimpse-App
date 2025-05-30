@@ -25,6 +25,8 @@ export default {
     },
     plugins: [
       "expo-router",
+      "expo-video",
+      "expo-web-browser",
       [
         "expo-splash-screen",
         {

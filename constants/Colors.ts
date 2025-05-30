@@ -50,7 +50,7 @@ export const darkTheme: ThemeColors = {
 
     font_dark: "#FFFFFF",
     font_placeholder: "#FFFFFF4D",
-    font_brand: "#6444CF",
+    font_brand: "#7D73EA",
     font_error: "#FF6B78",
     font_warn: "#FFE096",
     font_info: "#A8BDFF",

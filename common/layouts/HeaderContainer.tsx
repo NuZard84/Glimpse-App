@@ -55,6 +55,8 @@ export default function HeaderContainer({
           position: "relative",
           backgroundColor: colors.bg_offwhite,
           flex: 1,
+          height: "100%",
+          width: "100%",
         },
         customStyle,
       ]}
