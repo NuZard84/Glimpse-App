@@ -9,7 +9,12 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow Glimpse to access your photo library.",
+        "NSCameraUsageDescription": "Allow Glimpse to access your camera.",
+        "NSMicrophoneUsageDescription": "Allow Glimpse to use your microphone."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,8 +23,8 @@
       },
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
         "android.permission.RECORD_AUDIO",
         "android.permission.ACCESS_MEDIA_LOCATION"
       ],
@@ -32,12 +37,14 @@
     },
     "plugins": [
       "expo-router",
+      "expo-dev-client",
       [
         "expo-media-library",
         {
           "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
-          "isAccessMediaLocationEnabled": true
+          "isAccessMediaLocationEnabled": true,
+          "androidPermissions": ["READ_MEDIA_IMAGES", "READ_MEDIA_VIDEO"]
         }
       ],
       [

@@ -7,7 +7,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import IconButton from "./IconButton.";
 
 type BottomRowToolsProps = {
-  onImagePress: (image: string) => void;
+  onImagePress: (image: Asset) => void;
   onMediaLibraryPress: () => void;
   onCameraCapturePress: () => void;
   onZoomLevelChange: (level: number) => void;
@@ -25,26 +25,26 @@ export default function BottomRowTools({
 }: BottomRowToolsProps) {
   const colors = useAppColors();
   const [imgArr, setImgArr] = useState<Asset[]>(images);
-  const [dummyArr, setDummyArr] = useState<string[]>([
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7",
-    "8",
-    "9",
-    "10",
-  ]);
 
   useEffect(() => {
     if (images && images.length > 0) {
       setImgArr(images);
-    } else return;
+    }
   }, [images]);
 
-  console.log("imgArr", imgArr);
+  const getZoomLevel = (level: number) => {
+    switch (level) {
+      case 0:
+        return "1";
+      case 0.25:
+        return "2";
+      case 0.5:
+        return "3";
+      default:
+        return "1";
+    }
+  };
+
   return (
     <View
       style={{
@@ -70,7 +70,7 @@ export default function BottomRowTools({
           paddingVertical: 4,
         }}
       >
-        {[0.5, 1, 2].map((item, i) => (
+        {[0.25, 0, 0.5].map((item, i) => (
           <TouchableOpacity
             onPress={() => onZoomLevelChange(item)}
             style={{
@@ -85,7 +85,7 @@ export default function BottomRowTools({
               borderRadius: 18,
               height: 24,
               width: 24,
-              marginRight: item === 2 ? 0 : 6,
+              marginRight: item === 0.5 ? 0 : 6,
             }}
             key={i}
           >
@@ -97,7 +97,7 @@ export default function BottomRowTools({
                 },
               ]}
             >
-              {item === 0.5 ? ".5" : item}x
+              {getZoomLevel(item)}x
             </Text>
           </TouchableOpacity>
         ))}
@@ -114,28 +114,50 @@ export default function BottomRowTools({
           width: "100%",
         }}
       >
-        {dummyArr.map((item, i) => {
-          return (
-            <TouchableOpacity
-              onPress={() => onImagePress(item)}
-              key={i}
-              style={{
-                width: 60,
-                height: 60,
-                borderRadius: 30,
-                backgroundColor: "transparent",
-                borderWidth: 2,
-                borderColor: colors.font_dark,
-                marginRight: 10,
-              }}
-            >
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={{ width: 55, height: 55 }}
-              />
-            </TouchableOpacity>
-          );
-        })}
+        {imgArr.length > 0
+          ? imgArr.map((item, i) => (
+              <TouchableOpacity
+                onPress={() => onImagePress(item)}
+                key={i}
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
+                  backgroundColor: "transparent",
+                  borderWidth: 2,
+                  borderColor: colors.font_dark,
+                  marginRight: 10,
+                  overflow: "hidden",
+                }}
+              >
+                <Image
+                  source={{ uri: item.uri }}
+                  style={{ width: 56, height: 56, borderRadius: 28 }}
+                />
+              </TouchableOpacity>
+            ))
+          : [1, 2, 3, 4, 5, 6, 7, 8].map((item, i) => (
+              <TouchableOpacity
+                key={i}
+                onPress={() => onMediaLibraryPress()}
+                style={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: 30,
+                  backgroundColor: "transparent",
+                  borderWidth: 2,
+                  borderColor: colors.font_dark,
+                  marginRight: 10,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  source={require("@/assets/images/logo.png")}
+                  style={{ width: 56, height: 56, borderRadius: 28 }}
+                />
+              </TouchableOpacity>
+            ))}
       </ScrollView>
       <View
         style={{

@@ -2,23 +2,25 @@ import BottomRowTools from "@/common/BottomRowTools";
 import HeaderContainer from "@/common/layouts/HeaderContainer";
 import { useAppColors } from "@/constants/Colors";
 import { UserState } from "@/redux/reducers/userReducer";
-import { Feather } from "@expo/vector-icons";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
+
 import {
   Asset,
-  getAlbumsAsync,
   getAssetsAsync,
   getPermissionsAsync,
+  MediaType,
+  requestPermissionsAsync,
   usePermissions,
 } from "expo-media-library";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Dimensions,
   StyleSheet,
-  Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSelector } from "react-redux";
@@ -32,8 +34,11 @@ export default function Home() {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
-
+  const [zoom, setZoom] = useState(0);
+  const [cameraType, setCameraType] = useState<CameraType>("back");
+  const [isTorchOn, setIsTorchOn] = useState(false);
   const cameraRef = React.useRef<CameraView>(null);
+  const lastTap = useRef<number | null>(null);
   const isFocused = useIsFocused();
 
   const colors = useAppColors();
@@ -42,6 +47,7 @@ export default function Home() {
 
   useEffect(() => {
     handleContinue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -56,13 +62,20 @@ export default function Home() {
     }
   }, [isFocused]);
 
+  const handleTap = () => {
+    const now = Date.now();
+    if (lastTap.current && now - lastTap.current < 300) {
+      // Detected double tap
+      setCameraType((prev) => (prev === "back" ? "front" : "back"));
+    }
+    lastTap.current = now;
+  };
+
   const getAlbumsImages = async () => {
     try {
       const currentPermissions = await getPermissionsAsync();
-      console.log("Current media permission status:", currentPermissions);
 
       if (!currentPermissions.granted) {
-        console.log("Media library permission not granted");
         Alert.alert(
           "Permission Required",
           "Please grant media library access to view photos"
@@ -72,31 +85,14 @@ export default function Home() {
 
       const allAssets = await getAssetsAsync({
         first: 20,
-        mediaType: "photo",
+        mediaType: [MediaType.photo],
         sortBy: "creationTime",
       });
 
-      console.log(
-        `Found ${allAssets.totalCount} total photos, retrieved ${allAssets.assets.length}`
-      );
-
       if (allAssets.assets.length > 0) {
-        setAssets(allAssets.assets.slice(0, 4));
-        console.log("Assets set:", allAssets.assets.slice(0, 4));
-      } else {
-        console.log("No photos found on device");
-
-        const albums = await getAlbumsAsync();
-        // console.log(
-        //   "Available albums:",
-        //   albums.map((a) => ({
-        //     title: a.title,
-        //     count: a.assetCount,
-        //   }))
-        // );
+        setAssets(allAssets.assets.slice(0, 10));
       }
     } catch (error) {
-      console.error("Error getting media:", error);
       Alert.alert("Error", "Failed to load media from device");
     }
   };
@@ -113,11 +109,7 @@ export default function Home() {
   async function requestAllPermissions() {
     try {
       const cameraPermissionResult = await requestCameraPermission();
-      const mediaLibraryPermissionResult =
-        await requestMediaLibraryPermission();
-
-      console.log("Camera permission:", cameraPermissionResult);
-      console.log("Media library permission:", mediaLibraryPermissionResult);
+      const mediaLibraryPermissionResult = await requestPermissionsAsync(true);
 
       if (!cameraPermissionResult.granted) {
         Alert.alert("Error", "Camera permission is required to continue");
@@ -132,13 +124,11 @@ export default function Home() {
       }
       return true;
     } catch (error) {
-      console.error("Error requesting permissions:", error);
       return false;
     }
   }
 
   const handleCameraReady = useCallback(() => {
-    console.log("Camera is ready");
     setIsCameraReady(true);
   }, []);
 
@@ -146,16 +136,19 @@ export default function Home() {
     if (cameraRef.current && isCameraReady) {
       try {
         // const photo = await cameraRef.current.takePictureAsync();
-        console.log("Photo taken");
       } catch (error) {
         console.error("Error taking picture:", error);
       }
-    } else {
-      console.log("Camera not ready");
     }
   };
 
-  const handleZoomLevelChaange = () => {};
+  const handleZoomChange = (level: number) => {
+    setZoom(level);
+  };
+
+  const handleImagePress = (image: Asset) => {
+    // Handle image selection
+  };
 
   const renderCamera = () => {
     if (!isFocused || !isVisible) {
@@ -166,40 +159,70 @@ export default function Home() {
 
     return (
       <View style={styles.cameraContainer}>
-        <View style={styles.cameraWrapper}>
-          <CameraView
-            ref={cameraRef}
-            style={styles.camera}
-            onCameraReady={handleCameraReady}
-          />
+        <View style={[styles.cameraWrapper]}>
+          <View
+            style={{
+              position: "relative",
+            }}
+          >
+            <TouchableWithoutFeedback onPress={handleTap}>
+              <CameraView
+                ref={cameraRef}
+                style={styles.camera}
+                facing={cameraType}
+                zoom={zoom}
+                onCameraReady={handleCameraReady}
+                enableTorch={isTorchOn}
+              />
+            </TouchableWithoutFeedback>
+            <TouchableOpacity
+              onPress={() => {
+                setIsTorchOn((prev) => !prev);
+              }}
+              style={{
+                position: "absolute",
+                bottom: screenHeight * 0.125,
+                right: screenWidth * 0.05,
+              }}
+            >
+              {!isTorchOn ? (
+                <MaterialCommunityIcons
+                  name="lightning-bolt"
+                  size={28}
+                  style={{
+                    backgroundColor: colors.font_dark,
+                    borderRadius: 100,
+                    opacity: 0.65,
+                    padding: 10,
+                    transform: [{ rotate: "30deg" }],
+                  }}
+                  color={colors.bg_offwhite}
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name="lightning-bolt"
+                  size={28}
+                  style={{
+                    backgroundColor: colors.font_dark,
+                    borderRadius: 100,
+                    opacity: 1,
+                    padding: 10,
+                    transform: [{ rotate: "30deg" }],
+                  }}
+                  color={colors.bg_offwhite}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
           <BottomRowTools
-            onImagePress={(img) => {
-              console.log("Image pressed", img);
-            }}
-            onMediaLibraryPress={() => {
-              console.log("Media library pressed");
-            }}
+            onImagePress={handleImagePress}
+            onMediaLibraryPress={getAlbumsImages}
             onCameraCapturePress={handleCapture}
-            onZoomLevelChange={handleZoomLevelChaange}
-            zoomLevel={1}
+            onZoomLevelChange={handleZoomChange}
+            zoomLevel={zoom}
             images={assets}
           />
         </View>
-        {__DEV__ && (
-          <TouchableOpacity
-            onPress={() => {
-              requestAllPermissions().then((granted) => {
-                if (granted) {
-                  getAlbumsImages();
-                }
-              });
-            }}
-          >
-            <Text style={{ color: colors.font_dark, marginTop: 10 }}>
-              get albums
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
     );
   };
@@ -234,8 +257,6 @@ const styles = StyleSheet.create({
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-start",
-    // borderWidth: 1,
-    // borderColor: "red",
     marginTop: 16,
   },
   cameraContainer: {
