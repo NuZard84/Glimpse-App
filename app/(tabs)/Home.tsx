@@ -1,5 +1,6 @@
 import BottomRowTools from "@/common/BottomRowTools";
 import HeaderContainer from "@/common/layouts/HeaderContainer";
+import PictureView from "@/common/PictureView";
 import { useAppColors } from "@/constants/Colors";
 import { UserState } from "@/redux/reducers/userReducer";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -37,6 +38,8 @@ export default function Home() {
   const [zoom, setZoom] = useState(0);
   const [cameraType, setCameraType] = useState<CameraType>("back");
   const [isTorchOn, setIsTorchOn] = useState(false);
+  const [picture, setPicture] = useState<string | null>(null);
+
   const cameraRef = React.useRef<CameraView>(null);
   const lastTap = useRef<number | null>(null);
   const isFocused = useIsFocused();
@@ -135,7 +138,9 @@ export default function Home() {
   const handleCapture = async () => {
     if (cameraRef.current && isCameraReady) {
       try {
-        // const photo = await cameraRef.current.takePictureAsync();
+        const photo = await cameraRef.current.takePictureAsync();
+        console.log(photo.uri);
+        setPicture(photo.uri);
       } catch (error) {
         console.error("Error taking picture:", error);
       }
@@ -166,53 +171,109 @@ export default function Home() {
             }}
           >
             <TouchableWithoutFeedback onPress={handleTap}>
-              <CameraView
-                ref={cameraRef}
-                style={styles.camera}
-                facing={cameraType}
-                zoom={zoom}
-                onCameraReady={handleCameraReady}
-                enableTorch={isTorchOn}
-              />
-            </TouchableWithoutFeedback>
-            <TouchableOpacity
-              onPress={() => {
-                setIsTorchOn((prev) => !prev);
-              }}
-              style={{
-                position: "absolute",
-                bottom: screenHeight * 0.125,
-                right: screenWidth * 0.05,
-              }}
-            >
-              {!isTorchOn ? (
-                <MaterialCommunityIcons
-                  name="lightning-bolt"
-                  size={28}
-                  style={{
-                    backgroundColor: colors.font_dark,
-                    borderRadius: 100,
-                    opacity: 0.65,
-                    padding: 10,
-                    transform: [{ rotate: "30deg" }],
-                  }}
-                  color={colors.bg_offwhite}
-                />
+              {picture ? (
+                <PictureView picture={picture} setPicture={setPicture} />
               ) : (
-                <MaterialCommunityIcons
-                  name="lightning-bolt"
-                  size={28}
-                  style={{
-                    backgroundColor: colors.font_dark,
-                    borderRadius: 100,
-                    opacity: 1,
-                    padding: 10,
-                    transform: [{ rotate: "30deg" }],
-                  }}
-                  color={colors.bg_offwhite}
+                <CameraView
+                  ref={cameraRef}
+                  style={[
+                    styles.camera,
+                    {
+                      shadowColor: isTorchOn
+                        ? "rgba(255, 255, 255, 0.55)"
+                        : "rgba(255, 255, 255, 0.1)",
+                    },
+                  ]}
+                  facing={cameraType}
+                  zoom={zoom}
+                  onCameraReady={handleCameraReady}
+                  enableTorch={isTorchOn}
                 />
               )}
-            </TouchableOpacity>
+            </TouchableWithoutFeedback>
+            {picture && (
+              <>
+                <TouchableOpacity
+                  style={{
+                    position: "absolute",
+                    top: screenHeight * 0.028,
+                    right: screenWidth * 0.05,
+                  }}
+                  onPress={() => {
+                    setPicture(null);
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="close"
+                    size={22}
+                    color={colors.bg_offwhite}
+                    style={{
+                      backgroundColor: colors.font_dark,
+                      borderRadius: 100,
+                      padding: 8,
+                    }}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    position: "absolute",
+                    bottom: screenHeight * 0.125,
+                    right: screenWidth * 0.05,
+                  }}
+                >
+                  <Feather
+                    name="save"
+                    size={24}
+                    color={colors.bg_offwhite}
+                    style={{
+                      backgroundColor: colors.font_dark,
+                      borderRadius: 100,
+                      padding: 8,
+                    }}
+                  />
+                </TouchableOpacity>
+              </>
+            )}
+            {!picture && (
+              <TouchableOpacity
+                onPress={() => {
+                  setIsTorchOn((prev) => !prev);
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: screenHeight * 0.125,
+                  right: screenWidth * 0.05,
+                }}
+              >
+                {!isTorchOn ? (
+                  <MaterialCommunityIcons
+                    name="lightning-bolt"
+                    size={28}
+                    style={{
+                      backgroundColor: colors.font_dark,
+                      borderRadius: 100,
+                      opacity: 0.65,
+                      padding: 10,
+                      transform: [{ rotate: "30deg" }],
+                    }}
+                    color={colors.bg_offwhite}
+                  />
+                ) : (
+                  <MaterialCommunityIcons
+                    name="lightning-bolt"
+                    size={28}
+                    style={{
+                      backgroundColor: colors.font_dark,
+                      borderRadius: 100,
+                      opacity: 1,
+                      padding: 10,
+                      transform: [{ rotate: "30deg" }],
+                    }}
+                    color={colors.bg_offwhite}
+                  />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
           <BottomRowTools
             onImagePress={handleImagePress}
@@ -280,7 +341,6 @@ const styles = StyleSheet.create({
   },
   camera: {
     elevation: 8,
-    shadowColor: "rgba(255, 255, 255, 0.5)",
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
